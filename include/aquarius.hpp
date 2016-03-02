@@ -21,10 +21,6 @@
 
 namespace aquarius {
 
-struct unit {}; // for representing empty value
-
-
-
 constexpr expression::Char str(const char (&text)[2]) {
     return expression::Char(text[0]);
 }
@@ -92,13 +88,13 @@ constexpr expression::NonTerminal<T> nonTerm() {
 
 template <typename T>
 struct Rule {
-    typedef T retType;
+    using retType = T;
 };
 
 template <typename T>
 class ParsedResult {
 private:
-    typedef typename std::conditional< std::is_void<T>::value,
+    typedef typename std::conditional< misc::is_unit<T>::value,
             void *, T
     >::type resultType;
 
@@ -118,7 +114,7 @@ public:
     }
 
     bool hasResult() const noexcept {
-        return !std::is_void<T>::value;
+        return !misc::is_unit<T>::value;
     }
 };
 
@@ -127,7 +123,7 @@ struct Parser {
     typedef typename RULE::retType retType;
 
     template <typename RandomAccessIterator, typename P = retType,
-            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
         static_assert(misc::isConstant(RULE::pattern()), "must be constant");
 
@@ -135,7 +131,7 @@ struct Parser {
     }
 
     template <typename RandomAccessIterator, typename P = retType,
-            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
         static_assert(misc::isConstant(RULE::pattern()), "must be constant");
 

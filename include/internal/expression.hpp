@@ -20,7 +20,6 @@
 #include <stdexcept>
 #include <vector>
 #include <string>
-#include <type_traits>
 #include <cstdint>
 
 #include "misc.hpp"
@@ -97,7 +96,7 @@ namespace expression {
 struct Expression { };
 
 struct Any : Expression {
-    typedef void retType;
+    using retType = unit;
 
     constexpr Any() { }
 
@@ -112,7 +111,7 @@ struct Any : Expression {
 };
 
 struct StringLiteral : Expression {
-    typedef void retType;
+    using retType = unit;
 
     std::size_t size;
     const char *text;
@@ -140,7 +139,7 @@ struct StringLiteral : Expression {
 
 
 struct Char : Expression {
-    typedef void retType;
+    using retType = unit;
 
     char ch;
 
@@ -157,7 +156,7 @@ struct Char : Expression {
 };
 
 struct CharClass : Expression {
-    typedef void retType;
+    using retType = unit;
 
     misc::AsciiMap asciiMap;
 
@@ -176,18 +175,12 @@ struct CharClass : Expression {
     }
 };
 
-template <typename T, typename V>
-using unaryRetTypeHelper =
-typename std::conditional< std::is_void<T>::value,
-        void, V
->::type;
-
 template <typename T>
 struct ZeroMore : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
-    typedef typename T::retType exprType;
-    typedef unaryRetTypeHelper<exprType, std::vector<exprType>> retType;
+    using exprType = typename T::retType;
+    using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
 
     T expr;
 
@@ -201,7 +194,7 @@ struct ZeroMore : Expression {
 
     template <typename RandomAccessIterator, typename P = retType>
     bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
-                    misc::enable_if_t<!std::is_void<P>::value, std::vector<exprType>> &value) const {
+                    misc::enable_if_t<!misc::is_unit<P>::value, std::vector<exprType>> &value) const {
         exprType v;
         while(this->expr(begin, end, v)) {
             value.push_back(std::move(v));
@@ -214,9 +207,8 @@ template <typename T>
 struct OneMore : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
-    typedef typename T::retType exprType;
-
-    typedef unaryRetTypeHelper<exprType, std::vector<exprType>> retType;
+    using exprType = typename T::retType;
+    using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
 
     T expr;
 
@@ -233,7 +225,7 @@ struct OneMore : Expression {
 
     template <typename RandomAccessIterator, typename P = retType>
     bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
-                    misc::enable_if_t<!std::is_void<P>::value, std::vector<exprType>> &value) const {
+                    misc::enable_if_t<!misc::is_unit<P>::value, std::vector<exprType>> &value) const {
         exprType v;
         if(!this->expr(begin, end, v)) {
             return false;
@@ -249,11 +241,11 @@ template <typename T>
 struct AndPredicate : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
-    typedef typename T::retType exprType;
+    using exprType = typename T::retType;
 
-    static_assert(std::is_void<exprType>::value, "must be void type");
+    static_assert(misc::is_unit<exprType>::value, "must be unit type");
 
-    typedef void retType;
+    using retType = unit;
 
     T expr;
 
@@ -274,11 +266,11 @@ template <typename T>
 struct NotPredicate : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
-    typedef typename T::retType exprType;
+    using exprType = typename T::retType;
 
-    static_assert(std::is_void<exprType>::value, "must be void type");
+    static_assert(misc::is_unit<exprType>::value, "must be unit type");
 
-    typedef void retType;
+    using retType = unit;
 
     T expr;
 
@@ -299,11 +291,10 @@ template <typename T>
 struct Capture : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
-    typedef typename T::retType exprType;
+    using exprType = typename T::retType;
+    using retType = std::string;
 
-    typedef std::string retType;
-
-    static_assert(std::is_void<exprType>::value, "must be void type");
+    static_assert(misc::is_unit<exprType>::value, "must be unit type");
 
     T expr;
 
@@ -334,16 +325,10 @@ struct Sequence : Expression {
     static_assert(std::is_base_of<Expression, L>::value &&
                   std::is_base_of<Expression, R>::value, "must be Expression");
 
-    typedef typename L::retType leftType;
-    typedef typename R::retType rightType;
+    using leftType = typename L::retType;
+    using rightType = typename R::retType;
 
-    typedef typename std::conditional< std::is_void<leftType>::value && std::is_void<rightType>::value,
-            void, typename std::conditional< std::is_void<leftType>::value,
-                    rightType, typename std::conditional< std::is_void<rightType>::value,
-                            leftType, std::pair<leftType, rightType>
-            >::type
-    >::type
-    >::type retType;
+    using retType = misc::seqRetTypeHelper<leftType, rightType>;
 
     L left;
     R right;
@@ -365,9 +350,9 @@ struct Sequence : Expression {
 
     // return left value
     template <typename RandomAccessIterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<std::is_void<RT>::value && !std::is_void<LT>::value> = misc::enabler>
+            misc::enable_when<misc::is_unit<RT>::value && !misc::is_unit<LT>::value> = misc::enabler>
     bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
-                    misc::enable_if_t<!std::is_void<LT>::value, retType> &value) const {
+                    misc::enable_if_t<!misc::is_unit<LT>::value, retType> &value) const {
         RandomAccessIterator old = begin;
         if(!this->left(begin, end, value)) {
             return false;
@@ -381,9 +366,9 @@ struct Sequence : Expression {
 
     // return right value
     template <typename RandomAccessIterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<std::is_void<LT>::value && !std::is_void<RT>::value> = misc::enabler>
+            misc::enable_when<misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
     bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
-                    misc::enable_if_t<!std::is_void<RT>::value, retType> &value) const {
+                    misc::enable_if_t<!misc::is_unit<RT>::value, retType> &value) const {
         RandomAccessIterator old = begin;
         if(!this->left(begin, end)) {
             return false;
@@ -396,7 +381,7 @@ struct Sequence : Expression {
     }
 
     template <typename RandomAccessIterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<!std::is_void<LT>::value && !std::is_void<RT>::value> = misc::enabler>
+            misc::enable_when<!misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
     bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
                     std::pair<leftType, rightType> &value) const {
         RandomAccessIterator old = begin;
@@ -417,7 +402,7 @@ struct Sequence : Expression {
 
 template <typename T>
 struct NonTerminal : Expression {
-    typedef typename T::retType retType;
+    using retType = typename T::retType;
 
     constexpr NonTerminal() {}
 
@@ -428,7 +413,7 @@ struct NonTerminal : Expression {
 
     template <typename RandomAccessIterator, typename P = retType>
     bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
-                    misc::enable_if_t<!std::is_void<P>::value, P> &value) const {
+                    misc::enable_if_t<!misc::is_unit<P>::value, P> &value) const {
         return T::pattern()(begin, end, value);
     }
 };

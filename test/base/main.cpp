@@ -4,11 +4,13 @@
 
 #include <aquarius.hpp>
 
+#define CHECK_TYPE(p) \
+static_assert(aquarius::misc::is_unit<decltype(p)::retType>::value, "must be unit type")
 
 TEST(base, any) {
     using namespace aquarius;
 
-    static_assert(std::is_void<decltype(ANY)::retType>::value, "must be void type");
+    CHECK_TYPE(ANY);
 
     std::string input("a");
     auto begin = input.begin();
@@ -36,7 +38,7 @@ TEST(base, string1) {
     using namespace aquarius;
 
     constexpr auto p = "a"_str;
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("a");
     auto begin = input.begin();
@@ -75,7 +77,7 @@ TEST(base, string2) {
     using namespace aquarius;
 
     constexpr auto p = "abc"_str;
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("abcd");
     auto begin = input.begin();
@@ -114,7 +116,7 @@ TEST(base, charClass1) {
     using namespace aquarius;
 
     constexpr auto p = ch('a');
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("abc");
     auto begin = input.begin();
@@ -153,7 +155,7 @@ TEST(base, charClass2) {
     using namespace aquarius;
 
     constexpr auto p = ch('a', '1', 'C');
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("1Ca");
     auto begin = input.begin();
@@ -200,7 +202,7 @@ TEST(base, charClass3) {
     using namespace aquarius;
 
     constexpr auto p = ch(r('0', '9'), '_', r('a', 'z'));
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("10_aeh9op62qz8l");
     auto begin = input.begin();
@@ -241,7 +243,7 @@ TEST(base, andPredicate) {
     using namespace aquarius;
 
     constexpr auto p = &"abc"_str;
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("abc");
     auto begin = input.begin();
@@ -269,7 +271,7 @@ TEST(base, notPredicate) {
     using namespace aquarius;
 
     constexpr auto p = !"abc"_str;
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("1234");
     auto begin = input.begin();
@@ -328,7 +330,7 @@ TEST(base, zeroMore1) {
     using namespace aquarius;
 
     constexpr auto p = *ch(r('A', 'Z'));
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("ABCDEFGH");
     auto begin = input.begin();
@@ -390,7 +392,7 @@ TEST(base, oneMore1) {
     using namespace aquarius;
 
     constexpr auto p = +ch(r('A', 'Z'));
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("ABCDEFGH");
     auto begin = input.begin();
@@ -454,7 +456,7 @@ TEST(base, seq1) {
     using namespace aquarius;
 
     constexpr auto p = "hello"_str >> " "_str >> "world"_str;
-    static_assert(std::is_void<decltype(p)::retType>::value, "must be void type");
+    CHECK_TYPE(p);
 
     std::string input("hello world");
     auto begin = input.begin();
@@ -545,9 +547,9 @@ namespace top {
 using namespace aquarius;
 
 
-struct S : AQUARIUS_RHS(void, ch(' ', '\t', '\n', '\r'));
+struct S : AQUARIUS_RHS(unit, ch(' ', '\t', '\n', '\r'));
 
-AQUARIUS_DEFINE_RULE(void, SPACE, *nonTerm<S>());
+AQUARIUS_DEFINE_RULE(unit, SPACE, *nonTerm<S>());
 
 }
 
