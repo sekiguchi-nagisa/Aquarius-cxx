@@ -37,7 +37,7 @@ private:
 
 public:
     ParserState(RandomAccessIterator begin, RandomAccessIterator end) :
-            begin_(begin), end_(end), cursor_(begin), result_(false) { }
+            begin_(begin), end_(end), cursor_(begin), result_(true) { }
 
     const RandomAccessIterator begin() const {
         return this->begin_;
@@ -55,7 +55,11 @@ public:
         this->result_ = false;
     }
 
-    operator bool() const noexcept {
+    void setResult(bool set) {
+        this->result_ = set;
+    }
+
+    bool result() const {
         return this->result_;
     }
 };

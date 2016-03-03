@@ -82,7 +82,7 @@ constexpr expression::Sequence<L, R> operator>>(L left, R right) {
 };
 
 template <typename T>
-constexpr expression::NonTerminal<T> nonTerm() {
+constexpr expression::NonTerminal<T> nterm() {
     return expression::NonTerminal<T>();
 }
 
@@ -91,56 +91,67 @@ struct Rule {
     using retType = T;
 };
 
-//template <typename T>
-//class ParsedResult {
-//private:
-//    typedef typename std::conditional< misc::is_unit<T>::value,
-//            void *, T
-//    >::type resultType;
-//
-//    resultType value;
-//    bool success;
-//
-//public:
-//    ParsedResult(resultType && value, bool success)
-//            : value(std::move(value)), success(success) { }
-//
-//    explicit operator bool() const noexcept {
-//        return this->success;
-//    }
-//
-//    resultType &get() noexcept {
-//        return this->value;
-//    }
-//
-//    bool hasResult() const noexcept {
-//        return !misc::is_unit<T>::value;
-//    }
-//};
-//
-//template <typename RULE>
-//struct Parser {
-//    typedef typename RULE::retType retType;
-//
-//    template <typename RandomAccessIterator, typename P = retType,
-//            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
-//    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-//        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
-//
-//        return ParsedResult<retType>(nullptr, RULE::pattern()(begin, end));
-//    }
-//
-//    template <typename RandomAccessIterator, typename P = retType,
-//            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
-//    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-//        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
-//
-//        retType value;
-//        bool s = RULE::pattern()(begin, end, value);
-//        return ParsedResult<retType>(std::move(value), s);
-//    }
-//};
+template <typename T>
+class ParsedResult : public misc::NonCopyable<ParsedResult<T>> {
+private:
+    T *value_;
 
+public:
+    ParsedResult() : value_(nullptr) { }
+    ParsedResult(T &&value) : value_(new T()) {
+        *this->value_ = std::move(value);
+    }
+
+    ParsedResult(ParsedResult &&r) : value_(r.value_) {
+        r.value_ = nullptr;
+    }
+
+    ~ParsedResult() {
+        delete this->value_;
+    }
+
+    ParsedResult<T> &operator=(ParsedResult<T> &&r) {
+        auto tmp(std::move(r));
+        this->swap(tmp);
+        return *this;
+    }
+
+    void swap(ParsedResult<T> &r) {
+        std::swap(this->value_, r.value_);
+    }
+
+    explicit operator bool() const {
+        return this->value_ != nullptr;
+    }
+
+    T &get() {
+        return *this->value_;
+    }
+
+    static T extract(ParsedResult<T> &&r) {
+        T v;
+        std::swap(v, r.get());
+        return v;
+    }
+};
+
+template <typename RULE>
+struct Parser {
+    using retType = typename RULE::retType;
+
+    template <typename RandomAccessIterator>
+    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
+        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
+
+        ParsedResult<retType> r;
+        auto state = createState(begin, end);
+        auto v = RULE::pattern()(state);
+        if(state.result()) {
+            r = ParsedResult<retType>(std::move(v));
+        }
+        return std::move(r);
+    }
+};
 
 } // namespace aquarius
 

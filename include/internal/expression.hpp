@@ -102,12 +102,13 @@ struct Any : Expression {
     constexpr Any() { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
-        if(state.cursor() == state.end()) {  //FIXME: error report
-            return false;   //FIXME: UTF-8
+    unit operator()(ParserState<Iterator> &state) const {
+        if(state.cursor() == state.end()) {
+            state.reportFailure();
+        } else {
+            ++state.cursor();
         }
-        ++state.cursor();
-        return true;
+        return unit();
     }
 };
 
@@ -121,20 +122,21 @@ struct StringLiteral : Expression {
             text(text), size(size) { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    unit operator()(ParserState<Iterator> &state) const {
         if(state.end() - state.cursor() < this->size) {
-            return false;
-        }
-
-        auto old = state.cursor();
-        for(unsigned int i = 0; i < this->size; i++) {
-            if(this->text[i] != *state.cursor()) {
-                state.cursor() = old;
-                return false;
+            state.reportFailure();
+        } else {
+            auto old = state.cursor();
+            for(unsigned int i = 0; i < this->size; i++) {
+                if(this->text[i] != *state.cursor()) {
+                    state.reportFailure();
+                    state.cursor() = old;
+                    break;
+                }
+                ++state.cursor();
             }
-            ++state.cursor();
         }
-        return true;
+        return unit();
     }
 };
 
@@ -147,12 +149,13 @@ struct Char : Expression {
     constexpr Char(char ch) : ch(ch) { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    unit operator()(ParserState<Iterator> &state) const {
         if(state.cursor() != state.end() && *state.cursor() == this->ch) {
             ++state.cursor();
-            return true;
+        } else {
+            state.reportFailure();
         }
-        return false;
+        return unit();
     }
 };
 
@@ -164,15 +167,15 @@ struct CharClass : Expression {
     constexpr explicit CharClass(misc::AsciiMap asciiMap) : asciiMap(asciiMap) { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    unit operator()(ParserState<Iterator> &state) const {
         if(state.cursor() == state.end()) {
-            return false;
+            state.reportFailure();
+        } else if(!this->asciiMap.contains(*state.cursor())) {
+            state.reportFailure();
+        } else {
+            ++state.cursor();
         }
-        if(!this->asciiMap.contains(*state.cursor())) {
-            return false;
-        }
-        ++state.cursor();
-        return true;
+        return unit();
     }
 };
 
@@ -187,20 +190,29 @@ struct ZeroMore : Expression {
 
     constexpr explicit ZeroMore(T expr) : expr(expr) { }
 
-    template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
-        while(this->expr(state));
-        return true;
+    template <typename Iterator, typename P = exprType,
+            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
+    unit operator()(ParserState<Iterator> &state) const {
+        do {
+            this->expr(state);
+        } while(state.result());
+        state.setResult(true);
+        return unit();
     }
 
-    template <typename Iterator, typename P = retType>
-    bool operator()(ParserState<Iterator> &state,
-                    misc::enable_if_t<!misc::is_unit<P>::value, std::vector<exprType>> &value) const {
-        exprType v;
-        while(this->expr(state, v)) {
+    template <typename Iterator, typename P = exprType,
+            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
+    std::vector<exprType> operator()(ParserState<Iterator> &state) const {
+        std::vector<exprType> value;
+        while(true) {
+            auto v = this->expr(state);
+            if(!state.result()) {
+                break;
+            }
             value.push_back(std::move(v));
         }
-        return true;
+        state.setResult(true);
+        return value;
     }
 };
 
@@ -215,26 +227,32 @@ struct OneMore : Expression {
 
     constexpr explicit OneMore(T expr) : expr(expr) { }
 
-    template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
-        if(!this->expr(state)) {
-            return false;
+    template <typename Iterator, typename P = exprType,
+            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
+    unit operator()(ParserState<Iterator> &state) const {
+        this->expr(state);
+        if(state.result()) {
+            do {
+                this->expr(state);
+            } while(state.result());
+            state.setResult(true);
         }
-        while(this->expr(state));
-        return true;
+        return unit();
     }
 
-    template <typename Iterator, typename P = retType>
-    bool operator()(ParserState<Iterator> &state,
-                    misc::enable_if_t<!misc::is_unit<P>::value, std::vector<exprType>> &value) const {
-        exprType v;
-        if(!this->expr(state, v)) {
-            return false;
+    template <typename Iterator, typename P = exprType,
+            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
+    std::vector<exprType> operator()(ParserState<Iterator> &state) const {
+        std::vector<exprType> value;
+        auto v = this->expr(state);
+        if(state.result()) {
+            do {
+                value.push_back(std::move(v));
+                v = this->expr(state);
+            } while(state.result());
+            state.setResult(true);
         }
-        do {
-            value.push_back(std::move(v));
-        } while(this->expr(state, v));
-        return true;
+        return value;
     }
 };
 
@@ -253,13 +271,13 @@ struct AndPredicate : Expression {
     constexpr explicit AndPredicate(T expr) : expr(expr) { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    unit operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
-        if(!this->expr(state)) {
-            return false;
+        this->expr(state);
+        if(state.result()) {
+            state.cursor() = old;
         }
-        state.cursor() = old;
-        return true;
+        return unit();
     }
 };
 
@@ -278,13 +296,16 @@ struct NotPredicate : Expression {
     constexpr explicit NotPredicate(T expr) : expr(expr) { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    unit operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
-        if(this->expr(state)) {
+        this->expr(state);
+        if(state.result()) {
+            state.reportFailure();
             state.cursor() = old;
-            return false;
+        } else {
+            state.setResult(true);
         }
-        return true;
+        return unit();
     }
 };
 
@@ -302,13 +323,14 @@ struct Capture : Expression {
     constexpr explicit Capture(T expr) : expr(expr) { }
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state, std::string &value) const {
+    std::string operator()(ParserState<Iterator> &state) const {
+        std::string str;
         auto old = state.cursor();
-        if(!this->expr(state)) {
-            return false;
+        this->expr(state);
+        if(state.result()) {
+            str = std::string(old, state.cursor());
         }
-        value = std::string(old, state.cursor());
-        return true;
+        return str;
     }
 };
 
@@ -336,68 +358,65 @@ struct Sequence : Expression {
 
     constexpr Sequence(L left, R right) : left(left), right(right) { }
 
-    template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    template <typename Iterator, typename LT = leftType, typename RT = rightType,
+            misc::enable_when<misc::is_unit<LT>::value && misc::is_unit<RT>::value> = misc::enabler>
+    unit operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
-        if(!this->left(state)) {
-            return false;
+        this->left(state);
+        if(state.result()) {
+            this->right(state);
+            if(!state.result()) {
+                state.cursor() = old;
+            }
         }
-        if(!this->right(state)) {
-            state.cursor() = old;
-            return false;
-        }
-        return true;
+        return unit();
     }
 
     // return left value
     template <typename Iterator, typename LT = leftType, typename RT = rightType,
             misc::enable_when<misc::is_unit<RT>::value && !misc::is_unit<LT>::value> = misc::enabler>
-    bool operator()(ParserState<Iterator> &state,
-                    misc::enable_if_t<!misc::is_unit<LT>::value, retType> &value) const {
+    leftType operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
-        if(!this->left(state, value)) {
-            return false;
+        auto v = this->left(state);
+        if(state.result()) {
+            this->right(state);
+            if(!state.result()) {
+                state.cursor() = old;
+            }
         }
-        if(!this->right(state)) {
-            state.cursor() = old;
-            return false;
-        }
-        return true;
+        return v;
     }
 
     // return right value
     template <typename Iterator, typename LT = leftType, typename RT = rightType,
             misc::enable_when<misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
-    bool operator()(ParserState<Iterator> &state,
-                    misc::enable_if_t<!misc::is_unit<RT>::value, retType> &value) const {
+    rightType operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
-        if(!this->left(state)) {
-            return false;
+        rightType v;
+        this->left(state);
+        if(state.result()) {
+            v = this->right(state);
+            if(!state.result()) {
+                state.cursor() = old;
+            }
         }
-        if(!this->right(state, value)) {
-            state.cursor() = old;
-            return false;
-        }
-        return true;
+        return v;
     }
 
     template <typename Iterator, typename LT = leftType, typename RT = rightType,
             misc::enable_when<!misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
-    bool operator()(ParserState<Iterator> &state,
-                    std::pair<leftType, rightType> &value) const {
-        auto old = state.cursor();
+    retType operator()(ParserState<Iterator> &state) const {
         leftType v1;
         rightType v2;
-
-        if(!this->left(state, v1)) {
-            return false;
+        auto old = state.cursor();
+        v1 = this->left(state);
+        if(state.result()) {
+            v2 = this->right(state);
+            if(!state.result()) {
+                state.cursor() = old;
+            }
         }
-        if(!this->right(state, v2)) {
-            state.cursor() = old;
-            return false;
-        }
-        value = std::make_pair(std::move(v1), std::move(v2));
-        return true;
+        return std::make_pair(std::move(v1), std::move(v2));
     }
 };
 
@@ -408,14 +427,8 @@ struct NonTerminal : Expression {
     constexpr NonTerminal() {}
 
     template <typename Iterator>
-    bool operator()(ParserState<Iterator> &state) const {
+    retType operator()(ParserState<Iterator> &state) const {
         return T::pattern()(state);
-    }
-
-    template <typename Iterator, typename P = retType>
-    bool operator()(ParserState<Iterator> &state,
-                    misc::enable_if_t<!misc::is_unit<P>::value, P> &value) const {
-        return T::pattern()(state, value);
     }
 };
 

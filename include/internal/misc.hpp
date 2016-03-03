@@ -68,6 +68,17 @@ constexpr bool isConstant(T) {
     return true;
 }
 
+template <typename T>
+class NonCopyable {
+protected:
+    NonCopyable() = default;
+    ~NonCopyable() = default;
+
+private:
+    NonCopyable(const NonCopyable<T> &) = delete;
+    NonCopyable<T> &operator=(const NonCopyable<T> &) = delete;
+};
+
 } // namespace misc
 } // namespace aquarius
 

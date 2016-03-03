@@ -16,8 +16,8 @@ TEST(base, any) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = ANY(state);
-        ASSERT_TRUE(r);
+        auto r = ANY(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
     });
 
@@ -26,8 +26,8 @@ TEST(base, any) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = ANY(state);
-        ASSERT_FALSE(r);
+        auto r = ANY(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -42,8 +42,8 @@ TEST(base, string1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
     });
 
@@ -52,8 +52,8 @@ TEST(base, string1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
          ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -62,8 +62,8 @@ TEST(base, string1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -78,8 +78,8 @@ TEST(base, string2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(3, state.cursor() - state.begin());
     });
 
@@ -88,8 +88,8 @@ TEST(base, string2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -98,8 +98,8 @@ TEST(base, string2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -114,8 +114,8 @@ TEST(base, charClass1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
     });
 
@@ -124,8 +124,8 @@ TEST(base, charClass1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -134,8 +134,8 @@ TEST(base, charClass1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -150,16 +150,16 @@ TEST(base, charClass2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
 
         r = p(state);
-        ASSERT_TRUE(r);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(2, state.cursor() - state.begin());
 
         r = p(state);
-        ASSERT_TRUE(r);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(3, state.cursor() - state.begin());
     });
 
@@ -168,8 +168,8 @@ TEST(base, charClass2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -178,8 +178,8 @@ TEST(base, charClass2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -195,8 +195,8 @@ TEST(base, charClass3) {
 
     for(unsigned int i = 0; i < input.size(); i++) {
         ASSERT_NO_FATAL_FAILURE({
-            bool r = p(state);
-            ASSERT_TRUE(r);
+            auto r = p(state);
+            ASSERT_TRUE(state.result());
             ASSERT_EQ(i + 1, state.cursor() - state.begin());
         });
     }
@@ -206,8 +206,8 @@ TEST(base, charClass3) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -216,8 +216,8 @@ TEST(base, charClass3) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -232,8 +232,8 @@ TEST(base, andPredicate) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -242,8 +242,8 @@ TEST(base, andPredicate) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -258,8 +258,8 @@ TEST(base, notPredicate) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 
@@ -268,8 +268,8 @@ TEST(base, notPredicate) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -284,9 +284,8 @@ TEST(base, capture) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::string str;
-        bool r = p(state, str);
-        ASSERT_TRUE(r);
+        auto str = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(5, state.cursor() - state.begin());
         ASSERT_STREQ("hello", str.c_str());
     });
@@ -296,9 +295,8 @@ TEST(base, capture) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::string str;
-        bool r = p(state, str);
-        ASSERT_FALSE(r);
+        auto str = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -313,8 +311,8 @@ TEST(base, zeroMore1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(8, state.cursor() - state.begin());
     });
 
@@ -322,8 +320,8 @@ TEST(base, zeroMore1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -338,9 +336,8 @@ TEST(base, zeroMore2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::vector<std::string> results;
-        bool r = p(state, results);
-        ASSERT_TRUE(r);
+        auto results = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(12, state.cursor() - state.begin());
         ASSERT_EQ(3, results.size());
 
@@ -353,9 +350,8 @@ TEST(base, zeroMore2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::vector<std::string> values;
-        bool r = p(state, values);
-        ASSERT_TRUE(r);
+        auto values = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
         ASSERT_EQ(0, values.size());
     });
@@ -371,8 +367,8 @@ TEST(base, oneMore1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(8, state.cursor() - state.begin());
     });
 
@@ -381,8 +377,8 @@ TEST(base, oneMore1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -397,9 +393,8 @@ TEST(base, oneMore2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::vector<std::string> results;
-        bool r = p(state, results);
-        ASSERT_TRUE(r);
+        auto results = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(12, state.cursor() - state.begin());
         ASSERT_EQ(3, results.size());
 
@@ -413,9 +408,8 @@ TEST(base, oneMore2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::vector<std::string> values;
-        bool r = p(state, values);
-        ASSERT_FALSE(r);
+        auto values = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
         ASSERT_EQ(0, values.size());
     });
@@ -431,8 +425,8 @@ TEST(base, seq1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_TRUE(r);
+        auto r = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(11, state.cursor() - state.begin());
     });
 
@@ -441,8 +435,8 @@ TEST(base, seq1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        bool r = p(state);
-        ASSERT_FALSE(r);
+        auto r = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -457,9 +451,8 @@ TEST(base, seq2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::string value;
-        bool r = p(state, value);
-        ASSERT_TRUE(r);
+        auto value = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(11, state.cursor() - state.begin());
         ASSERT_STREQ("hello", value.c_str());
     });
@@ -469,9 +462,8 @@ TEST(base, seq2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::string value;
-        bool r = p(state, value);
-        ASSERT_FALSE(r);
+        auto value = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -486,9 +478,8 @@ TEST(base, seq3) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::string value;
-        bool r = p(state, value);
-        ASSERT_TRUE(r);
+        auto value = p(state);
+        ASSERT_TRUE(state.result());
         ASSERT_EQ(11, state.cursor() - state.begin());
         ASSERT_STREQ("world", value.c_str());
     });
@@ -498,9 +489,8 @@ TEST(base, seq3) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        std::string value;
-        bool r = p(state, value);
-        ASSERT_FALSE(r);
+        auto value = p(state);
+        ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
 }
@@ -512,26 +502,24 @@ using namespace aquarius;
 
 struct S : AQUARIUS_RHS(unit, ch(' ', '\t', '\n', '\r'));
 
-AQUARIUS_DEFINE_RULE(unit, SPACE, *nonTerm<S>());
+AQUARIUS_DEFINE_RULE(unit, SPACE, *nterm<S>());
 
 }
 
-//TEST(base, nterm) {
-//    using namespace top;
-//    using namespace aquarius;
-//
-//    std::string line("  \t \n ");
-//    auto begin = line.begin();
-//    auto end = line.end();
-//
-//    bool r = SPACE::pattern()(begin, end);
-//    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r));
-//    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(6, begin - line.begin()));
-//
-//    auto rr = Parser<SPACE>()(line.begin(), line.end());
-//    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(static_cast<bool>(rr)));
-//    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(rr.hasResult()));
-//}
+TEST(base, nterm) {
+    using namespace top;
+    using namespace aquarius;
+
+    std::string line("  \t \n ");
+    auto state = createState(line.begin(), line.end());
+
+    auto r = SPACE::pattern()(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(6, state.cursor() - state.begin()));
+
+    auto rr = Parser<SPACE>()(line.begin(), line.end());
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(static_cast<bool>(rr)));
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
