@@ -22,6 +22,7 @@
 #include <string>
 #include <cstdint>
 
+#include "state.hpp"
 #include "misc.hpp"
 
 namespace aquarius {
@@ -100,12 +101,12 @@ struct Any : Expression {
 
     constexpr Any() { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        if(begin == end) {  //FIXME: error report
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        if(state.cursor() == state.end()) {  //FIXME: error report
             return false;   //FIXME: UTF-8
         }
-        ++begin;
+        ++state.cursor();
         return true;
     }
 };
@@ -119,19 +120,19 @@ struct StringLiteral : Expression {
     constexpr explicit StringLiteral(const char *text, std::size_t size) :
             text(text), size(size) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        if(end - begin < this->size) {
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        if(state.end() - state.cursor() < this->size) {
             return false;
         }
 
-        RandomAccessIterator old = begin;
+        auto old = state.cursor();
         for(unsigned int i = 0; i < this->size; i++) {
-            if(this->text[i] != *begin) {
-                begin = old;
+            if(this->text[i] != *state.cursor()) {
+                state.cursor() = old;
                 return false;
             }
-            ++begin;
+            ++state.cursor();
         }
         return true;
     }
@@ -145,10 +146,10 @@ struct Char : Expression {
 
     constexpr Char(char ch) : ch(ch) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        if(begin != end && *begin == this->ch) {
-            ++begin;
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        if(state.cursor() != state.end() && *state.cursor() == this->ch) {
+            ++state.cursor();
             return true;
         }
         return false;
@@ -162,15 +163,15 @@ struct CharClass : Expression {
 
     constexpr explicit CharClass(misc::AsciiMap asciiMap) : asciiMap(asciiMap) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        if(begin == end) {
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        if(state.cursor() == state.end()) {
             return false;
         }
-        if(!this->asciiMap.contains(*begin)) {
+        if(!this->asciiMap.contains(*state.cursor())) {
             return false;
         }
-        ++begin;
+        ++state.cursor();
         return true;
     }
 };
@@ -186,17 +187,17 @@ struct ZeroMore : Expression {
 
     constexpr explicit ZeroMore(T expr) : expr(expr) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        while(this->expr(begin, end));
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        while(this->expr(state));
         return true;
     }
 
-    template <typename RandomAccessIterator, typename P = retType>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
+    template <typename Iterator, typename P = retType>
+    bool operator()(ParserState<Iterator> &state,
                     misc::enable_if_t<!misc::is_unit<P>::value, std::vector<exprType>> &value) const {
         exprType v;
-        while(this->expr(begin, end, v)) {
+        while(this->expr(state, v)) {
             value.push_back(std::move(v));
         }
         return true;
@@ -214,25 +215,25 @@ struct OneMore : Expression {
 
     constexpr explicit OneMore(T expr) : expr(expr) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        if(!this->expr(begin, end)) {
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        if(!this->expr(state)) {
             return false;
         }
-        while(this->expr(begin, end));
+        while(this->expr(state));
         return true;
     }
 
-    template <typename RandomAccessIterator, typename P = retType>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
+    template <typename Iterator, typename P = retType>
+    bool operator()(ParserState<Iterator> &state,
                     misc::enable_if_t<!misc::is_unit<P>::value, std::vector<exprType>> &value) const {
         exprType v;
-        if(!this->expr(begin, end, v)) {
+        if(!this->expr(state, v)) {
             return false;
         }
         do {
             value.push_back(std::move(v));
-        } while(this->expr(begin, end, v));
+        } while(this->expr(state, v));
         return true;
     }
 };
@@ -251,13 +252,13 @@ struct AndPredicate : Expression {
 
     constexpr explicit AndPredicate(T expr) : expr(expr) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        RandomAccessIterator old = begin;
-        if(!this->expr(begin, end)) {
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        auto old = state.cursor();
+        if(!this->expr(state)) {
             return false;
         }
-        begin = old;
+        state.cursor() = old;
         return true;
     }
 };
@@ -276,11 +277,11 @@ struct NotPredicate : Expression {
 
     constexpr explicit NotPredicate(T expr) : expr(expr) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        RandomAccessIterator old = begin;
-        if(this->expr(begin, end)) {
-            begin = old;
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        auto old = state.cursor();
+        if(this->expr(state)) {
+            state.cursor() = old;
             return false;
         }
         return true;
@@ -300,13 +301,13 @@ struct Capture : Expression {
 
     constexpr explicit Capture(T expr) : expr(expr) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end, std::string &value) const {
-        RandomAccessIterator old = begin;
-        if(!this->expr(begin, end)) {
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state, std::string &value) const {
+        auto old = state.cursor();
+        if(!this->expr(state)) {
             return false;
         }
-        value = std::string(old, begin);
+        value = std::string(old, state.cursor());
         return true;
     }
 };
@@ -335,64 +336,64 @@ struct Sequence : Expression {
 
     constexpr Sequence(L left, R right) : left(left), right(right) { }
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        RandomAccessIterator old = begin;
-        if(!this->left(begin, end)) {
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        auto old = state.cursor();
+        if(!this->left(state)) {
             return false;
         }
-        if(!this->right(begin, end)) {
-            begin = old;
+        if(!this->right(state)) {
+            state.cursor() = old;
             return false;
         }
         return true;
     }
 
     // return left value
-    template <typename RandomAccessIterator, typename LT = leftType, typename RT = rightType,
+    template <typename Iterator, typename LT = leftType, typename RT = rightType,
             misc::enable_when<misc::is_unit<RT>::value && !misc::is_unit<LT>::value> = misc::enabler>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
+    bool operator()(ParserState<Iterator> &state,
                     misc::enable_if_t<!misc::is_unit<LT>::value, retType> &value) const {
-        RandomAccessIterator old = begin;
-        if(!this->left(begin, end, value)) {
+        auto old = state.cursor();
+        if(!this->left(state, value)) {
             return false;
         }
-        if(!this->right(begin, end)) {
-            begin = old;
+        if(!this->right(state)) {
+            state.cursor() = old;
             return false;
         }
         return true;
     }
 
     // return right value
-    template <typename RandomAccessIterator, typename LT = leftType, typename RT = rightType,
+    template <typename Iterator, typename LT = leftType, typename RT = rightType,
             misc::enable_when<misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
+    bool operator()(ParserState<Iterator> &state,
                     misc::enable_if_t<!misc::is_unit<RT>::value, retType> &value) const {
-        RandomAccessIterator old = begin;
-        if(!this->left(begin, end)) {
+        auto old = state.cursor();
+        if(!this->left(state)) {
             return false;
         }
-        if(!this->right(begin, end, value)) {
-            begin = old;
+        if(!this->right(state, value)) {
+            state.cursor() = old;
             return false;
         }
         return true;
     }
 
-    template <typename RandomAccessIterator, typename LT = leftType, typename RT = rightType,
+    template <typename Iterator, typename LT = leftType, typename RT = rightType,
             misc::enable_when<!misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
+    bool operator()(ParserState<Iterator> &state,
                     std::pair<leftType, rightType> &value) const {
-        RandomAccessIterator old = begin;
+        auto old = state.cursor();
         leftType v1;
         rightType v2;
 
-        if(!this->left(begin, end, v1)) {
+        if(!this->left(state, v1)) {
             return false;
         }
-        if(!this->right(begin, end, v2)) {
-            begin = old;
+        if(!this->right(state, v2)) {
+            state.cursor() = old;
             return false;
         }
         value = std::make_pair(std::move(v1), std::move(v2));
@@ -406,15 +407,15 @@ struct NonTerminal : Expression {
 
     constexpr NonTerminal() {}
 
-    template <typename RandomAccessIterator>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end) const {
-        return T::pattern()(begin, end);
+    template <typename Iterator>
+    bool operator()(ParserState<Iterator> &state) const {
+        return T::pattern()(state);
     }
 
-    template <typename RandomAccessIterator, typename P = retType>
-    bool operator()(RandomAccessIterator &begin, const RandomAccessIterator end,
+    template <typename Iterator, typename P = retType>
+    bool operator()(ParserState<Iterator> &state,
                     misc::enable_if_t<!misc::is_unit<P>::value, P> &value) const {
-        return T::pattern()(begin, end, value);
+        return T::pattern()(state, value);
     }
 };
 

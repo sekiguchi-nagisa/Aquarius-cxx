@@ -91,55 +91,55 @@ struct Rule {
     using retType = T;
 };
 
-template <typename T>
-class ParsedResult {
-private:
-    typedef typename std::conditional< misc::is_unit<T>::value,
-            void *, T
-    >::type resultType;
-
-    resultType value;
-    bool success;
-
-public:
-    ParsedResult(resultType && value, bool success)
-            : value(std::move(value)), success(success) { }
-
-    explicit operator bool() const noexcept {
-        return this->success;
-    }
-
-    resultType &get() noexcept {
-        return this->value;
-    }
-
-    bool hasResult() const noexcept {
-        return !misc::is_unit<T>::value;
-    }
-};
-
-template <typename RULE>
-struct Parser {
-    typedef typename RULE::retType retType;
-
-    template <typename RandomAccessIterator, typename P = retType,
-            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
-    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
-
-        return ParsedResult<retType>(nullptr, RULE::pattern()(begin, end));
-    }
-
-    template <typename RandomAccessIterator, typename P = retType,
-            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
-    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
-
-        retType value;
-        bool s = RULE::pattern()(begin, end, value);
-        return ParsedResult<retType>(std::move(value), s);
-    }
-};
+//template <typename T>
+//class ParsedResult {
+//private:
+//    typedef typename std::conditional< misc::is_unit<T>::value,
+//            void *, T
+//    >::type resultType;
+//
+//    resultType value;
+//    bool success;
+//
+//public:
+//    ParsedResult(resultType && value, bool success)
+//            : value(std::move(value)), success(success) { }
+//
+//    explicit operator bool() const noexcept {
+//        return this->success;
+//    }
+//
+//    resultType &get() noexcept {
+//        return this->value;
+//    }
+//
+//    bool hasResult() const noexcept {
+//        return !misc::is_unit<T>::value;
+//    }
+//};
+//
+//template <typename RULE>
+//struct Parser {
+//    typedef typename RULE::retType retType;
+//
+//    template <typename RandomAccessIterator, typename P = retType,
+//            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
+//    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
+//        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
+//
+//        return ParsedResult<retType>(nullptr, RULE::pattern()(begin, end));
+//    }
+//
+//    template <typename RandomAccessIterator, typename P = retType,
+//            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
+//    ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
+//        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
+//
+//        retType value;
+//        bool s = RULE::pattern()(begin, end, value);
+//        return ParsedResult<retType>(std::move(value), s);
+//    }
+//};
 
 
 } // namespace aquarius
