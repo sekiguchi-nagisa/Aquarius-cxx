@@ -415,6 +415,52 @@ TEST(base, oneMore2) {
     });
 }
 
+TEST(base, option1) {
+    using namespace aquarius;
+
+    constexpr auto p = -"hello"_str;
+    CHECK_TYPE(p);
+
+    std::string input("hello");
+    auto state = createState(input.begin(), input.end());
+
+    auto result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
+
+    input = "hel";
+    state = createState(input.begin(), input.end());
+
+    result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
+}
+
+TEST(base, option2) {
+    using namespace aquarius;
+
+    constexpr auto p = -text[ "world"_str ];
+    static_assert(std::is_same<Optional<std::string>, decltype(p)::retType>::value, "must be string type");
+
+    std::string input("world   ");
+    auto state = createState(input.begin(), input.end());
+
+    auto result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(static_cast<bool>(result)));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(result.get() == "world"));
+
+
+    input = "worl";
+    state = createState(input.begin(), state.end());
+
+    result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(static_cast<bool>(result)));
+}
+
 TEST(base, seq1) {
     using namespace aquarius;
 
@@ -493,6 +539,37 @@ TEST(base, seq3) {
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
+}
+
+TEST(base, choice) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ "world"_str ] | text[ "he"_str >> "llo"_str ];
+    static_assert(std::is_same<decltype(p)::retType, std::string>::value, "must be same type");
+
+    std::string input("hello");
+    auto state = createState(input.begin(), input.end());
+
+    auto result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(result == "hello"));
+
+    input = "world";
+    state = createState(input.begin(), input.end());
+
+    result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(result == "world"));
+
+    // failed case
+    input = "worl";
+    state = createState(input.begin(), input.end());
+
+    result = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
 }
 
 namespace top {

@@ -257,6 +257,41 @@ struct OneMore : Expression {
 };
 
 template <typename T>
+struct Option : Expression {
+    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+
+    using exprType = typename T::retType;
+    using retType = misc::unaryRetTypeHelper<exprType, Optional<exprType>>;
+
+    T expr;
+
+    constexpr explicit Option(T expr) : expr(expr) { }
+
+    template <typename Iterator, typename P = exprType,
+            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
+    unit operator()(ParserState<Iterator> &state) const {
+        this->expr(state);
+        if(!state.result()) {
+            state.setResult(true);
+        }
+        return unit();
+    }
+
+    template <typename Iterator, typename P = exprType,
+            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
+    Optional<exprType> operator()(ParserState<Iterator> &state) const {
+        Optional<exprType> value;
+        auto v = this->expr(state);
+        if(state.result()) {
+            value = Optional<exprType>(std::move(v));
+        } else {
+            state.setResult(true);
+        }
+        return std::move(value);
+    }
+};
+
+template <typename T>
 struct AndPredicate : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
@@ -384,7 +419,7 @@ struct Sequence : Expression {
                 state.cursor() = old;
             }
         }
-        return v;
+        return std::move(v);
     }
 
     // return right value
@@ -400,7 +435,7 @@ struct Sequence : Expression {
                 state.cursor() = old;
             }
         }
-        return v;
+        return std::move(v);
     }
 
     template <typename Iterator, typename LT = leftType, typename RT = rightType,
@@ -417,6 +452,34 @@ struct Sequence : Expression {
             }
         }
         return std::make_pair(std::move(v1), std::move(v2));
+    }
+};
+
+template <typename L, typename R>
+struct Choice : Expression {
+    static_assert(std::is_base_of<Expression, L>::value &&
+                  std::is_base_of<Expression, R>::value, "must be Expression");
+
+    using leftType = typename L::retType;
+    using rightType = typename R::retType;
+
+    static_assert(std::is_same<leftType, rightType >::value, "must be same type");
+
+    using retType = leftType ;
+
+    L left;
+    R right;
+
+    constexpr Choice(L left, R right) : left(left), right(right) { }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &state) const {
+        retType v = this->left(state);
+        if(!state.result()) {
+            state.setResult(true);
+            v = this->right(state);
+        }
+        return std::move(v);
     }
 };
 

@@ -80,6 +80,46 @@ private:
 };
 
 } // namespace misc
+
+template <typename T>
+class Optional : public misc::NonCopyable<Optional<T>> {
+private:
+    T *value_;
+
+public:
+    Optional() : value_(nullptr) { }
+
+    Optional(T &&t) : value_(new T) {
+        *this->value_ = std::move(t);
+    }
+
+    Optional(Optional &&o) : value_(o.value_) {
+        o.value_ = nullptr;
+    }
+
+    ~Optional() {
+        delete this->value_;
+    }
+
+    Optional &operator=(Optional &&o) {
+        auto tmp(std::move(o));
+        this->swap(tmp);
+        return *this;
+    }
+
+    void swap(Optional &o) {
+        std::swap(this->value_, o.value_);
+    }
+
+    explicit operator bool() const {
+        return this->value_ != nullptr;
+    }
+
+    T &get() {
+        return *this->value_;
+    }
+};
+
 } // namespace aquarius
 
 #endif //AQUARIUS_CXX_INTERNAL_MISC_HPP

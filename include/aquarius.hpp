@@ -67,6 +67,11 @@ constexpr expression::OneMore<T> operator+(T expr) {
 }
 
 template <typename T>
+constexpr expression::Option<T> operator-(T expr) {
+    return expression::Option<T>(expr);
+}
+
+template <typename T>
 constexpr expression::AndPredicate<T> operator&(T expr) {
     return expression::AndPredicate<T>(expr);
 }
@@ -81,6 +86,11 @@ constexpr expression::Sequence<L, R> operator>>(L left, R right) {
     return expression::Sequence<L, R>(left, right);
 };
 
+template <typename L, typename R>
+constexpr expression::Choice<L, R> operator|(L left, R right) {
+    return expression::Choice<L, R>(left, right);
+};
+
 template <typename T>
 constexpr expression::NonTerminal<T> nterm() {
     return expression::NonTerminal<T>();
@@ -92,23 +102,17 @@ struct Rule {
 };
 
 template <typename T>
-class ParsedResult : public misc::NonCopyable<ParsedResult<T>> {
+class ParsedResult {
 private:
-    T *value_;
+    Optional<T> value_;
 
 public:
-    ParsedResult() : value_(nullptr) { }
-    ParsedResult(T &&value) : value_(new T()) {
-        *this->value_ = std::move(value);
-    }
+    ParsedResult() = default;
+    ParsedResult(T &&value) : value_(std::move(value)) { }
 
-    ParsedResult(ParsedResult &&r) : value_(r.value_) {
-        r.value_ = nullptr;
-    }
+    ParsedResult(ParsedResult &&r) : value_(std::move(r.value_)) { }
 
-    ~ParsedResult() {
-        delete this->value_;
-    }
+    ~ParsedResult() = default;
 
     ParsedResult<T> &operator=(ParsedResult<T> &&r) {
         auto tmp(std::move(r));
@@ -117,21 +121,20 @@ public:
     }
 
     void swap(ParsedResult<T> &r) {
-        std::swap(this->value_, r.value_);
+        this->value_.swap(r.value_);
     }
 
     explicit operator bool() const {
-        return this->value_ != nullptr;
+        return static_cast<bool>(this->value_);
     }
 
     T &get() {
-        return *this->value_;
+        return this->value_.get();
     }
 
     static T extract(ParsedResult<T> &&r) {
-        T v;
-        std::swap(v, r.get());
-        return v;
+        T t = std::move(r.get());
+        return t;
     }
 };
 
