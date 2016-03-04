@@ -4,13 +4,23 @@
 
 #include <aquarius.hpp>
 
-#define CHECK_TYPE(p) \
-static_assert(aquarius::misc::is_unit<decltype(p)::retType>::value, "must be unit type")
+template <typename P>
+constexpr bool check_unit(P) {
+    static_assert(aquarius::misc::is_unit<typename P::retType>::value, "must be unit type");
+    return true;
+}
+
+template <typename T, typename P>
+constexpr bool check_same(P) {
+    static_assert(std::is_same<typename P::retType, T>::value, "must be same type");
+    return true;
+};
+
 
 TEST(base, any) {
     using namespace aquarius;
 
-    CHECK_TYPE(ANY);
+    check_unit(ANY);
 
     std::string input("a");
     auto state = createState(input.begin(), input.end());
@@ -36,7 +46,7 @@ TEST(base, string1) {
     using namespace aquarius;
 
     constexpr auto p = "a"_str;
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("a");
     auto state = createState(input.begin(), input.end());
@@ -72,7 +82,7 @@ TEST(base, string2) {
     using namespace aquarius;
 
     constexpr auto p = "abc"_str;
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("abcd");
     auto state = createState(input.begin(), input.end());
@@ -108,7 +118,7 @@ TEST(base, charClass1) {
     using namespace aquarius;
 
     constexpr auto p = ch('a');
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("abc");
     auto state = createState(input.begin(), input.end());
@@ -144,7 +154,7 @@ TEST(base, charClass2) {
     using namespace aquarius;
 
     constexpr auto p = ch('a', '1', 'C');
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("1Ca");
     auto state = createState(input.begin(), input.end());
@@ -188,7 +198,7 @@ TEST(base, charClass3) {
     using namespace aquarius;
 
     constexpr auto p = ch(r('0', '9'), '_', r('a', 'z'));
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("10_aeh9op62qz8l");
     auto state = createState(input.begin(), input.end());
@@ -226,7 +236,7 @@ TEST(base, andPredicate) {
     using namespace aquarius;
 
     constexpr auto p = &"abc"_str;
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("abc");
     auto state = createState(input.begin(), input.end());
@@ -252,7 +262,7 @@ TEST(base, notPredicate) {
     using namespace aquarius;
 
     constexpr auto p = !"abc"_str;
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("1234");
     auto state = createState(input.begin(), input.end());
@@ -278,7 +288,7 @@ TEST(base, capture) {
     using namespace aquarius;
 
     constexpr auto p = text["hello"_str];
-    static_assert(std::is_same<std::string, decltype(p)::retType>::value, "must be string type");
+    check_same<std::string>(p);
 
     std::string input("hello");
     auto state = createState(input.begin(), input.end());
@@ -305,7 +315,7 @@ TEST(base, zeroMore1) {
     using namespace aquarius;
 
     constexpr auto p = *ch(r('A', 'Z'));
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("ABCDEFGH");
     auto state = createState(input.begin(), input.end());
@@ -330,7 +340,7 @@ TEST(base, zeroMore2) {
     using namespace aquarius;
 
     constexpr auto p = *text[ "ABC "_str ];
-    static_assert(std::is_same<std::vector<std::string>, decltype(p)::retType>::value, "same type");
+    check_same<std::vector<std::string>>(p);
 
     std::string input("ABC ABC ABC ");
     auto state = createState(input.begin(), input.end());
@@ -361,7 +371,7 @@ TEST(base, oneMore1) {
     using namespace aquarius;
 
     constexpr auto p = +ch(r('A', 'Z'));
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("ABCDEFGH");
     auto state = createState(input.begin(), input.end());
@@ -387,7 +397,7 @@ TEST(base, oneMore2) {
     using namespace aquarius;
 
     constexpr auto p = +text[ "ABC "_str ];
-    static_assert(std::is_same<std::vector<std::string>, decltype(p)::retType>::value, "same type");
+    check_same<std::vector<std::string>>(p);
 
     std::string input("ABC ABC ABC ");
     auto state = createState(input.begin(), input.end());
@@ -419,7 +429,7 @@ TEST(base, option1) {
     using namespace aquarius;
 
     constexpr auto p = -"hello"_str;
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("hello");
     auto state = createState(input.begin(), input.end());
@@ -440,7 +450,7 @@ TEST(base, option2) {
     using namespace aquarius;
 
     constexpr auto p = -text[ "world"_str ];
-    static_assert(std::is_same<Optional<std::string>, decltype(p)::retType>::value, "must be string type");
+    check_same<Optional<std::string>>(p);
 
     std::string input("world   ");
     auto state = createState(input.begin(), input.end());
@@ -465,7 +475,7 @@ TEST(base, seq1) {
     using namespace aquarius;
 
     constexpr auto p = "hello"_str >> " "_str >> "world"_str;
-    CHECK_TYPE(p);
+    check_unit(p);
 
     std::string input("hello world");
     auto state = createState(input.begin(), input.end());
@@ -491,7 +501,7 @@ TEST(base, seq2) {
     using namespace aquarius;
 
     constexpr auto p = text[ "hello"_str ] >> " world"_str;
-    static_assert(std::is_same<decltype(p)::retType, std::string>::value, "must be same type");
+    check_same<std::string>(p);
 
     std::string input("hello world");
     auto state = createState(input.begin(), input.end());
@@ -518,7 +528,7 @@ TEST(base, seq3) {
     using namespace aquarius;
 
     constexpr auto p = "hello "_str >> text[ "world"_str ];
-    static_assert(std::is_same<decltype(p)::retType, std::string>::value, "must be same type");
+    check_same<std::string>(p);
 
     std::string input("hello world");
     auto state = createState(input.begin(), input.end());
@@ -545,7 +555,7 @@ TEST(base, seq4) {
     using namespace aquarius;
 
     constexpr auto p = text[ "hello"_str ] >> " "_str >> text[ "world"_str ];
-    static_assert(std::is_same<decltype(p)::retType, std::tuple<std::string, std::string>>::value, "must be same type");
+    check_same<std::tuple<std::string, std::string>>(p);
 
     std::string input("hello world");
     auto state = createState(input.begin(), input.end());
@@ -565,11 +575,72 @@ TEST(base, seq4) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
 }
 
+TEST(base, seq5) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ "hello"_str ] >> " "_str >> text[ "world"_str ] >> -text[ "!!"_str ];
+    check_same<std::tuple<std::string, std::string, Optional<std::string>>>(p);
+
+    std::string input("hello world");
+    auto state = createState(input.begin(), input.end());
+
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(11, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<0>(r), "hello"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<1>(r), "world"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(static_cast<bool>(std::get<2>(r))));
+
+    input = "hello world!!";
+    state = createState(input.begin(), input.end());
+
+    r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(13, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<0>(r), "hello"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<1>(r), "world"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(static_cast<bool>(std::get<2>(r))));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<2>(r).get(), "!!"));
+
+    // failure
+    input = "hello0";
+    state = createState(input.begin(), input.end());
+
+    r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
+}
+
+TEST(base, seq6) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ "hello"_str ] >> (" "_str >> text[ "world"_str ]) >> text[ "!!"_str ];
+    check_same<std::tuple<std::string, std::string, std::string>>(p);
+
+    std::string input = "hello world!!";
+    auto state = createState(input.begin(), input.end());
+
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(13, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<0>(r), "hello"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<1>(r), "world"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<2>(r), "!!"));
+
+    // failure
+    input = "hello0";
+    state = createState(input.begin(), input.end());
+
+    r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
+}
+
 TEST(base, choice) {
     using namespace aquarius;
 
     constexpr auto p = text[ "world"_str ] | text[ "he"_str >> "llo"_str ];
-    static_assert(std::is_same<decltype(p)::retType, std::string>::value, "must be same type");
+    check_same<std::string>(p);
 
     std::string input("hello");
     auto state = createState(input.begin(), input.end());

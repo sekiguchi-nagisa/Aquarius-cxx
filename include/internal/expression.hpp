@@ -212,7 +212,7 @@ struct ZeroMore : Expression {
             value.push_back(std::move(v));
         }
         state.setResult(true);
-        return value;
+        return std::move(value);
     }
 };
 
@@ -252,7 +252,7 @@ struct OneMore : Expression {
             } while(state.result());
             state.setResult(true);
         }
-        return value;
+        return std::move(value);
     }
 };
 
