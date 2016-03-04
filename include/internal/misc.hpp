@@ -18,6 +18,7 @@
 #define AQUARIUS_CXX_INTERNAL_MISC_HPP
 
 #include <type_traits>
+#include <tuple>
 
 namespace aquarius {
 
@@ -42,6 +43,35 @@ template <bool cond>
 using enable_when = enable_if_t<cond, void> *&;
 
 /**
+ * check whether a type is tuple or not.
+ */
+template <typename T>
+struct isTuple : std::false_type {};
+
+template <typename ... A>
+struct isTuple<std::tuple<A ...>> : std::true_type {};
+
+template <typename L, typename R, enable_when<!isTuple<L>::value && !isTuple<R>::value> = enabler>
+inline auto appendToTuple(L &&l, R &&r) -> decltype(std::make_tuple(std::move(l), std::move(r))) {
+    return std::make_tuple(std::move(l), std::move(r));
+};
+
+template <typename L, typename R, enable_when<isTuple<L>::value && !isTuple<R>::value> = enabler>
+inline auto appendToTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::make_tuple(std::move(r)))) {
+    return std::tuple_cat(std::move(l), std::make_tuple(std::move(r)));
+};
+
+template <typename L, typename R, enable_when<!isTuple<L>::value && isTuple<R>::value> = enabler>
+inline auto appendToTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::make_tuple(std::move(l)), std::move(r))) {
+    return std::tuple_cat(std::make_tuple(std::move(l)), std::move(r));
+};
+
+template <typename L, typename R, enable_when<isTuple<L>::value && isTuple<R>::value> = enabler>
+inline auto appendToTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::move(r))) {
+    return std::tuple_cat(std::move(l), std::move(r));
+};
+
+/**
  * for expression return type resolving
  */
 template <typename T, typename V>
@@ -55,7 +85,7 @@ using seqRetTypeHelper =
     typename std::conditional< is_unit<L>::value && is_unit<R>::value,
             unit, typename std::conditional< is_unit<L>::value,
                     R, typename std::conditional< is_unit<R>::value,
-                            L, std::pair<L, R>
+                            L, decltype(appendToTuple(L(), R()))
                     >::type
             >::type
     >::type;

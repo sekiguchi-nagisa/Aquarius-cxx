@@ -451,7 +451,7 @@ struct Sequence : Expression {
                 state.cursor() = old;
             }
         }
-        return std::make_pair(std::move(v1), std::move(v2));
+        return misc::appendToTuple(std::move(v1), std::move(v2));
     }
 };
 

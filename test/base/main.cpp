@@ -541,6 +541,30 @@ TEST(base, seq3) {
     });
 }
 
+TEST(base, seq4) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ "hello"_str ] >> " "_str >> text[ "world"_str ];
+    static_assert(std::is_same<decltype(p)::retType, std::tuple<std::string, std::string>>::value, "must be same type");
+
+    std::string input("hello world");
+    auto state = createState(input.begin(), input.end());
+
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(11, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<0>(r), "hello"));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(std::get<1>(r), "world"));
+
+    // failure
+    input = "hello0";
+    state = createState(input.begin(), input.end());
+
+    r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
+}
+
 TEST(base, choice) {
     using namespace aquarius;
 
