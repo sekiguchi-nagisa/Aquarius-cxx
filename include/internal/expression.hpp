@@ -24,6 +24,7 @@
 
 #include "state.hpp"
 #include "misc.hpp"
+#include "tuples.hpp"
 
 namespace aquarius {
 
@@ -89,6 +90,25 @@ constexpr AsciiMap makeFromRange(char start, char stop) {
     return start < stop ? makeFromRange(AsciiMap(), start, stop)
                         : throw std::logic_error("start is less than stop");
 }
+
+/**
+ * for expression return type resolving
+ */
+template <typename T, typename V>
+using unaryRetTypeHelper = 
+    typename std::conditional< is_unit<T>::value, 
+            unit, V
+    >::type;
+
+template <typename L, typename R>
+using seqRetTypeHelper =
+    typename std::conditional< is_unit<L>::value && is_unit<R>::value, 
+            unit, typename std::conditional< is_unit<L>::value, 
+                    R, typename std::conditional< is_unit<R>::value, 
+                            L, decltype(appendToTuple(L(), R()))
+                    >::type
+            >::type
+    >::type;
 
 } // namespace misc
 
