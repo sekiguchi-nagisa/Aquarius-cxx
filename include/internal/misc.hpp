@@ -26,9 +26,7 @@ struct unit {}; // for representing empty value
 namespace misc {
 
 template <typename T>
-struct is_unit {
-    static constexpr bool value = std::is_same<T, unit>::value;
-};
+struct is_unit : std::is_same<T, unit> { };
 
 /**
  * type helper

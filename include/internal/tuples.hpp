@@ -33,6 +33,15 @@ struct isTuple : std::false_type {};
 template <typename ... A>
 struct isTuple<std::tuple<A ...>> : std::true_type {};
 
+template <typename ... A>
+struct isTuple<std::tuple<A ...> &> : std::true_type {};
+
+template <typename ... A>
+struct isTuple<const std::tuple<A ...> &> : std::true_type {};
+
+/**
+ * for tuple concatenation
+ */
 template <typename L, typename R, enable_when<!isTuple<L>::value && !isTuple<R>::value> = enabler>
 inline auto appendToTuple(L &&l, R &&r) -> decltype(std::make_tuple(std::move(l), std::move(r))) {
     return std::make_tuple(std::move(l), std::move(r));
