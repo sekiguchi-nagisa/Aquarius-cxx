@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include <gtest/gtest.h>
 
@@ -666,6 +667,29 @@ TEST(base, choice) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
 }
+
+struct Sum {
+    int operator()(std::string &&a, std::string &&b) const {
+        int x = std::stoi(a);
+        int y = std::stoi(b);
+        return x + y;
+    }
+};
+
+TEST(base, mapper) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] && Sum();
+    check_same<int>(p);
+
+    std::string input("12+18");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
+}
+
 
 namespace top {
 

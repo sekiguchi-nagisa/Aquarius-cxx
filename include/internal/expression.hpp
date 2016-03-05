@@ -105,7 +105,7 @@ using seqRetTypeHelper =
     typename std::conditional< is_unit<L>::value && is_unit<R>::value, 
             unit, typename std::conditional< is_unit<L>::value, 
                     R, typename std::conditional< is_unit<R>::value, 
-                            L, decltype(appendToTuple(L(), R()))
+                            L, decltype(catAsTuple(L(), R()))
                     >::type
             >::type
     >::type;
@@ -471,7 +471,7 @@ struct Sequence : Expression {
                 state.cursor() = old;
             }
         }
-        return misc::appendToTuple(std::move(v1), std::move(v2));
+        return misc::catAsTuple(std::move(v1), std::move(v2));
     }
 };
 
@@ -514,6 +514,30 @@ struct NonTerminal : Expression {
         return T::pattern()(state);
     }
 };
+
+template <typename T, typename M>
+struct MapperAdapter : Expression {
+    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+
+    T expr;
+    M mapper;
+
+    using retType = decltype(misc::unpackAndApplyImpl(mapper, typename T::retType()));
+    static_assert(!std::is_void<retType>::value, "return type of mapper must not be void");
+
+    constexpr MapperAdapter(T expr, M mapper) : expr(expr), mapper(mapper) { }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &state) const {
+        auto v = this->expr(state);
+        retType r;
+        if(state.result()) {
+            r = misc::unpackAndApply(this->mapper, std::move(v));
+        }
+        return std::move(r);
+    }
+};
+
 
 } // namespace expression
 } // namespace aquarius

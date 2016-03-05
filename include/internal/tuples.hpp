@@ -43,23 +43,50 @@ struct isTuple<const std::tuple<A ...> &> : std::true_type {};
  * for tuple concatenation
  */
 template <typename L, typename R, enable_when<!isTuple<L>::value && !isTuple<R>::value> = enabler>
-inline auto appendToTuple(L &&l, R &&r) -> decltype(std::make_tuple(std::move(l), std::move(r))) {
+inline auto catAsTuple(L &&l, R &&r) -> decltype(std::make_tuple(std::move(l), std::move(r))) {
     return std::make_tuple(std::move(l), std::move(r));
 };
 
 template <typename L, typename R, enable_when<isTuple<L>::value && !isTuple<R>::value> = enabler>
-inline auto appendToTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::make_tuple(std::move(r)))) {
+inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::make_tuple(std::move(r)))) {
     return std::tuple_cat(std::move(l), std::make_tuple(std::move(r)));
 };
 
 template <typename L, typename R, enable_when<!isTuple<L>::value && isTuple<R>::value> = enabler>
-inline auto appendToTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::make_tuple(std::move(l)), std::move(r))) {
+inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::make_tuple(std::move(l)), std::move(r))) {
     return std::tuple_cat(std::make_tuple(std::move(l)), std::move(r));
 };
 
 template <typename L, typename R, enable_when<isTuple<L>::value && isTuple<R>::value> = enabler>
-inline auto appendToTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::move(r))) {
+inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::move(r))) {
     return std::tuple_cat(std::move(l), std::move(r));
+};
+
+/**
+ * for tuple unpacking
+ */
+template <typename Func, typename ... A, typename ... Arg,
+        enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
+inline auto unpackAndApplyImpl(Func &func, std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(func(A() ...)) {
+    return func(std::forward<Arg>(arg)...);
+}
+
+template <typename Func, typename ... A, typename ... Arg,
+        enable_when<(sizeof...(A) > sizeof...(Arg))> = enabler>
+inline auto unpackAndApplyImpl(Func &func, std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(func(A() ...)) {
+    return unpackAndApplyImpl(func, std::move(tuple),
+                              std::forward<Arg>(arg)..., std::move(std::get<sizeof...(Arg)>(tuple)));
+}
+
+
+template <typename Func, typename ... A>
+inline auto unpackAndApply(Func &func, std::tuple<A ...> &&tuple) -> decltype(func(A() ...)) {
+    return unpackAndApplyImpl(func, std::move(tuple));
+};
+
+template <typename Func, typename A>
+inline auto unpackAndApply(Func &func, A &&arg) -> decltype(func(std::forward<A>(arg))) {
+    return func(std::forward<A>(arg));
 };
 
 

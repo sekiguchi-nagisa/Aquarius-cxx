@@ -96,6 +96,11 @@ constexpr expression::NonTerminal<T> nterm() {
     return expression::NonTerminal<T>();
 }
 
+template <typename T, typename M>
+constexpr expression::MapperAdapter<T, M> operator&&(T expr, M mapper) {
+    return expression::MapperAdapter<T, M>(expr, mapper);
+}
+
 template <typename T>
 struct Rule {
     using retType = T;
