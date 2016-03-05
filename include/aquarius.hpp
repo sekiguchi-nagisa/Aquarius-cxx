@@ -72,13 +72,18 @@ constexpr expression::Option<T> operator-(T expr) {
 }
 
 template <typename T>
-constexpr expression::AndPredicate<T> operator&(T expr) {
-    return expression::AndPredicate<T>(expr);
-}
-
-template <typename T>
 constexpr expression::NotPredicate<T> operator!(T expr) {
     return expression::NotPredicate<T>(expr);
+}
+
+//template <typename T>
+//constexpr expression::AndPredicate<T> operator&(T expr) {
+//    return expression::AndPredicate<T>(expr);
+//}
+
+template <typename T>
+constexpr auto operator&(T expr) -> decltype(!(!expr)) {
+    return !(!expr);
 }
 
 template <typename L, typename R>

@@ -522,7 +522,7 @@ struct MapperAdapter : Expression {
     T expr;
     M mapper;
 
-    using retType = decltype(misc::unpackAndApplyImpl(mapper, typename T::retType()));
+    using retType = decltype(misc::unpackAndApply(mapper, typename T::retType()));
     static_assert(!std::is_void<retType>::value, "return type of mapper must not be void");
 
     constexpr MapperAdapter(T expr, M mapper) : expr(expr), mapper(mapper) { }
