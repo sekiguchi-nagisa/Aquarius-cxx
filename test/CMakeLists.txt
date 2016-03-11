@@ -23,3 +23,4 @@ include_directories(${GTEST_DIR}/include)
 
 add_subdirectory(base)
 add_subdirectory(tuple)
+add_subdirectory(type)

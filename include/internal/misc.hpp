@@ -39,6 +39,18 @@ using enable_if_t = typename std::enable_if<cond, T>::type;
 template <bool cond>
 using enable_when = enable_if_t<cond, void> *&;
 
+template <typename T>
+struct paramTypeExtractor { };
+
+template <template <typename> class T, typename P>
+struct paramTypeExtractor<T<P>> {
+    using paramType = P;
+};
+
+template <typename T>
+using param_type_of = typename paramTypeExtractor<T>::paramType;
+
+
 /**
  * check whether value is constant or not
  */
