@@ -1,0 +1,22 @@
+#!/usr/bin/env ydsh
+
+let target = $@[0]
+let output = "output.txt"
+
+
+mkdir -p build
+cd build
+
+var opts = ['O0', 'O1', 'O2', 'O3']
+
+echo > $output
+for $opt in $opts {
+    echo "test -$opt option" >> $output
+    c++ -std=c++11 -$opt -I../../../include -I../simple_json_parser.hpp ../main.cpp -o example_json_$opt
+    if $? != 0 {
+        echo compilation error 1>&2
+        exit 1
+    }
+
+    eval ./example_json_$opt $target >> $output
+}
