@@ -12,7 +12,7 @@ struct Holder {
 template <typename T> struct Holder2;
 using Holder3 = Holder2<int>;
 
-TEST(base, case1) {
+TEST(type, case1) {
     static_assert(std::is_same<int, misc::param_type_of<Holder<int>>>::value, "must be same type");
     static_assert(std::is_same<int, misc::param_type_of<Holder2<int>>>::value, "must be same type");
     static_assert(std::is_same<int, misc::param_type_of<Holder3>>::value, "must be same type");

@@ -505,7 +505,7 @@ struct Choice : Expression {
 
 template <typename T>
 struct NonTerminal : Expression {
-    using retType = typename T::retType;
+    using retType = misc::param_type_of<T>;
 
     constexpr NonTerminal() {}
 

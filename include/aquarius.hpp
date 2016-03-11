@@ -150,7 +150,7 @@ public:
 
 template <typename RULE>
 struct Parser {
-    using retType = typename RULE::retType;
+    using retType = typename decltype(nterm<RULE>())::retType;
 
     template <typename RandomAccessIterator>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
@@ -171,16 +171,18 @@ struct Parser {
 // helper macro
 
 #define AQUARIUS_ASSERT_PATTERN(P) \
-static_assert(std::is_same<retType, decltype(P)::retType>::value, "must be same type")
+static_assert(std::is_same<T, decltype(P)::retType>::value, "must be same type")
 
-#define AQUARIUS_RHS(t, p) \
-Rule<t> {\
+#define AQUARIUS_DEFINE_RULE(R, name, p) \
+template <typename T> \
+struct name ## __impl { \
+    using name = name ## __impl<R>;\
     AQUARIUS_ASSERT_PATTERN(p);\
     static constexpr auto pattern() -> decltype(p) { return p; }\
-}\
+}; using name = name ## __impl<R>
 
-#define AQUARIUS_DEFINE_RULE(t, name, p) struct name : AQUARIUS_RHS(t, p)
-
+#define AQUARIUS_DECL_RULE(R, name) \
+template <typename T> struct name ## __impl; using name = name ## __impl<R>
 
 
 #endif //AQUARIUS_CXX_AQUARIUS_HPP

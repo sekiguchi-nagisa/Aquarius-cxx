@@ -695,14 +695,17 @@ namespace top {
 
 using namespace aquarius;
 
-
-struct S : AQUARIUS_RHS(unit, ch(' ', '\t', '\n', '\r'));
+AQUARIUS_DECL_RULE(unit, S);
 
 AQUARIUS_DEFINE_RULE(unit, SPACE, *nterm<S>());
 
+AQUARIUS_DEFINE_RULE(unit, S, ch(' ', '\t', '\n', '\r'));
+
+AQUARIUS_DEFINE_RULE(unit, Rep, ch('b') | ch('a') >> nterm<Rep>());
+
 }
 
-TEST(base, nterm) {
+TEST(base, nterm1) {
     using namespace top;
     using namespace aquarius;
 
@@ -715,6 +718,15 @@ TEST(base, nterm) {
 
     auto rr = Parser<SPACE>()(line.begin(), line.end());
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(static_cast<bool>(rr)));
+}
+
+TEST(base, nterm2) {
+    using namespace top;
+    using namespace aquarius;
+
+    std::string input("aaaab");
+    auto r = Parser<Rep>()(input.begin(), input.end());
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(static_cast<bool>(r)));
 }
 
 int main(int argc, char **argv) {
