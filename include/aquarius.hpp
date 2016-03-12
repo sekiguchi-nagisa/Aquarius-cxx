@@ -21,30 +21,21 @@
 
 namespace aquarius {
 
-constexpr expression::Char str(const char (&text)[2]) {
-    return expression::Char(text[0]);
-}
-
-template <std::size_t N>
-constexpr expression::StringLiteral str(const char (&text)[N]) {
-    return expression::StringLiteral(text, N - 1);
-}
-
 constexpr expression::StringLiteral operator "" _str(const char *text, std::size_t size) {
     return expression::StringLiteral(text, size);
 }
 
-constexpr expression::Char ch(char ch) {
+constexpr expression::Char operator ""_ch(char ch) {
     return ch >= 0 ? expression::Char(ch) : throw std::logic_error("must be ascii character");
 }
 
 template <typename ... T>
-constexpr expression::CharClass ch(char ch, T ... rest) {
+constexpr expression::CharClass set(char ch, T ... rest) {
     return expression::CharClass(misc::makeAsciiMap(ch, rest...));
 }
 
 template <typename ... T>
-constexpr expression::CharClass ch(misc::AsciiMap map, T ... rest) {
+constexpr expression::CharClass set(misc::AsciiMap map, T ... rest) {
     return expression::CharClass(misc::makeAsciiMap(map, rest...));
 }
 
@@ -92,9 +83,9 @@ constexpr expression::Choice<L, R> operator|(L left, R right) {
 };
 
 template <typename T>
-constexpr expression::NonTerminal<T> nterm() {
-    return expression::NonTerminal<T>();
-}
+struct nterm {
+    static constexpr expression::NonTerminal<T> v = expression::NonTerminal<T>();
+};
 
 template <typename T, typename M>
 constexpr expression::MapperAdapter<T, M> operator&&(T expr, M mapper) {
@@ -140,7 +131,7 @@ public:
 
 template <typename RULE>
 struct Parser {
-    using retType = typename decltype(nterm<RULE>())::retType;
+    using retType = typename decltype(nterm<RULE>::v)::retType;
 
     template <typename RandomAccessIterator>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
