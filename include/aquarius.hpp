@@ -76,11 +76,6 @@ constexpr expression::NotPredicate<T> operator!(T expr) {
     return expression::NotPredicate<T>(expr);
 }
 
-//template <typename T>
-//constexpr expression::AndPredicate<T> operator&(T expr) {
-//    return expression::AndPredicate<T>(expr);
-//}
-
 template <typename T>
 constexpr auto operator&(T expr) -> decltype(!(!expr)) {
     return !(!expr);
@@ -105,11 +100,6 @@ template <typename T, typename M>
 constexpr expression::MapperAdapter<T, M> operator&&(T expr, M mapper) {
     return expression::MapperAdapter<T, M>(expr, mapper);
 }
-
-template <typename T>
-struct Rule {
-    using retType = T;
-};
 
 template <typename T>
 class ParsedResult {

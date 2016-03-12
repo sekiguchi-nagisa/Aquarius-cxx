@@ -312,31 +312,6 @@ struct Option : Expression {
 };
 
 template <typename T>
-struct AndPredicate : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
-
-    using exprType = typename T::retType;
-
-    static_assert(misc::is_unit<exprType>::value, "must be unit type");
-
-    using retType = unit;
-
-    T expr;
-
-    constexpr explicit AndPredicate(T expr) : expr(expr) { }
-
-    template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
-        auto old = state.cursor();
-        this->expr(state);
-        if(state.result()) {
-            state.cursor() = old;
-        }
-        return unit();
-    }
-};
-
-template <typename T>
 struct NotPredicate : Expression {
     static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
 
@@ -505,7 +480,7 @@ struct Choice : Expression {
 
 template <typename T>
 struct NonTerminal : Expression {
-    using retType = misc::param_type_of<T>;
+    using retType = misc::param_type_of_t<T>;
 
     constexpr NonTerminal() {}
 

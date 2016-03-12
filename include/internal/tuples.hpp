@@ -28,36 +28,36 @@ namespace misc {
  * check whether a type is tuple or not.
  */
 template <typename T>
-struct isTuple : std::false_type {};
+struct is_tuple : std::false_type {};
 
 template <typename ... A>
-struct isTuple<std::tuple<A ...>> : std::true_type {};
+struct is_tuple<std::tuple<A ...>> : std::true_type {};
 
 template <typename ... A>
-struct isTuple<std::tuple<A ...> &> : std::true_type {};
+struct is_tuple<std::tuple<A ...> &> : std::true_type {};
 
 template <typename ... A>
-struct isTuple<const std::tuple<A ...> &> : std::true_type {};
+struct is_tuple<const std::tuple<A ...> &> : std::true_type {};
 
 /**
  * for tuple concatenation
  */
-template <typename L, typename R, enable_when<!isTuple<L>::value && !isTuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<!is_tuple<L>::value && !is_tuple<R>::value> = enabler>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::make_tuple(std::move(l), std::move(r))) {
     return std::make_tuple(std::move(l), std::move(r));
 };
 
-template <typename L, typename R, enable_when<isTuple<L>::value && !isTuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<is_tuple<L>::value && !is_tuple<R>::value> = enabler>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::make_tuple(std::move(r)))) {
     return std::tuple_cat(std::move(l), std::make_tuple(std::move(r)));
 };
 
-template <typename L, typename R, enable_when<!isTuple<L>::value && isTuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<!is_tuple<L>::value && is_tuple<R>::value> = enabler>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::make_tuple(std::move(l)), std::move(r))) {
     return std::tuple_cat(std::make_tuple(std::move(l)), std::move(r));
 };
 
-template <typename L, typename R, enable_when<isTuple<L>::value && isTuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<is_tuple<L>::value && is_tuple<R>::value> = enabler>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::move(r))) {
     return std::tuple_cat(std::move(l), std::move(r));
 };

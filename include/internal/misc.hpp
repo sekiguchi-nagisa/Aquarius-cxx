@@ -40,15 +40,15 @@ template <bool cond>
 using enable_when = enable_if_t<cond, void> *&;
 
 template <typename T>
-struct paramTypeExtractor { };
+struct param_type_of { };
 
 template <template <typename> class T, typename P>
-struct paramTypeExtractor<T<P>> {
+struct param_type_of<T<P>> {
     using paramType = P;
 };
 
 template <typename T>
-using param_type_of = typename paramTypeExtractor<T>::paramType;
+using param_type_of_t = typename param_type_of<T>::paramType;
 
 
 /**
