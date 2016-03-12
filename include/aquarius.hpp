@@ -135,11 +135,11 @@ struct Parser {
 
     template <typename RandomAccessIterator>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-        static_assert(misc::isConstant(RULE::pattern()), "must be constant");
+        constexpr auto p = RULE::pattern();
 
         ParsedResult<retType> r;
         auto state = createState(begin, end);
-        auto v = RULE::pattern()(state);
+        auto v = p(state);
         if(state.result()) {
             r = ParsedResult<retType>(std::move(v));
         }

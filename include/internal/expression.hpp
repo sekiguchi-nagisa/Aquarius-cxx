@@ -486,7 +486,8 @@ struct NonTerminal : Expression {
 
     template <typename Iterator>
     retType operator()(ParserState<Iterator> &state) const {
-        return T::pattern()(state);
+        constexpr auto p = T::pattern();
+        return p(state);
     }
 };
 
