@@ -90,6 +90,20 @@ TEST(tuple, unpack3) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(100, r));
 }
 
+struct Produce {
+    bool operator()() const {
+        return true;
+    }
+};
+
+TEST(tuple, unpack4) {
+    Produce p;
+
+    auto r = misc::unpackAndApply(p, unit());
+    static_assert(std::is_same<bool, decltype(r)>::value, "must be bool");
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r));
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

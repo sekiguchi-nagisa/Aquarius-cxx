@@ -89,6 +89,11 @@ inline auto unpackAndApply(Func &func, A &&arg) -> decltype(func(std::forward<A>
     return func(std::forward<A>(arg));
 };
 
+template <typename Func>
+inline auto unpackAndApply(Func &func, unit &&arg) -> decltype(func()) {
+    return func();
+}
+
 
 } // namespace misc
 } // namespace aquarius
