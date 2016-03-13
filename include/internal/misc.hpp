@@ -57,7 +57,9 @@ using param_type_of_t = typename param_type_of<T>::paramType;
  * get first type of type parameter pack.
  */
 template <typename ... Arg>
-struct first_of_param_pack { };
+struct first_of_param_pack {
+    using type = void;
+};
 
 template <typename First, typename ... Arg>
 struct first_of_param_pack<First, Arg ...> {

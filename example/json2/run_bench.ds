@@ -2,21 +2,21 @@
 
 let target = $@[0]
 let output = "output.txt"
-
+let bin = "example_json2"
 
 mkdir -p build
 cd build
 
 var opts = ['O0', 'O1', 'O2', 'O3']
 
-echo > $output
+echo -e "target input: $target\n" > $output
 for $opt in $opts {
     echo "test -$opt option" >> $output
-    c++ -std=c++11 -$opt -I../../../include -I../simple_json_parser.hpp ../main.cpp -o example_json_$opt
+    c++ -std=c++11 -$opt -I../../../include -I../json_parser.hpp -I../json.hpp ../main.cpp -o ${bin}_$opt
     if $? != 0 {
         echo compilation error 1>&2
         exit 1
     }
 
-    eval ./example_json_$opt $target >> $output
+    eval ./${bin}_$opt $target >> $output
 }

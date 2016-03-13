@@ -469,9 +469,9 @@ struct Choice : Expression {
     using leftType = typename L::retType;
     using rightType = typename R::retType;
 
-    static_assert(std::is_same<leftType, rightType >::value, "must be same type");
+    static_assert(std::is_assignable<leftType, rightType >::value, "must be assignable");
 
-    using retType = leftType ;
+    using retType = leftType;
 
     L left;
     R right;
