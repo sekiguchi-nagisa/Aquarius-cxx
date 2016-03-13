@@ -39,6 +39,9 @@ using enable_if_t = typename std::enable_if<cond, T>::type;
 template <bool cond>
 using enable_when = enable_if_t<cond, void> *&;
 
+/**
+ * get type parameter of specialized template.
+ */
 template <typename T>
 struct param_type_of { };
 
@@ -50,21 +53,50 @@ struct param_type_of<T<P>> {
 template <typename T>
 using param_type_of_t = typename param_type_of<T>::paramType;
 
+/**
+ * get first type of type parameter pack.
+ */
+template <typename ... Arg>
+struct first_of_param_pack { };
+
+template <typename First, typename ... Arg>
+struct first_of_param_pack<First, Arg ...> {
+    using type = First;
+};
+
+template <typename ... T>
+using first_of_param_pack_t = typename first_of_param_pack<T...>::type;
+
+/**
+ * for function object traits.
+ */
 template <typename T>
-struct ret_type_of_func { };
+struct func_type_traits : func_type_traits<decltype(&T::operator())> { };
 
 template <typename Holder, typename Ret, typename ... Arg>
-struct ret_type_of_func<Ret(Holder::*)(Arg ...) const> {
-    using type = Ret;
+struct func_type_traits<Ret(Holder::*)(Arg ...) const> {
+    using ret_type = Ret;
+    using first_param_type = first_of_param_pack_t<Arg ...>;
 };
 
 template <typename Holder, typename Ret, typename ... Arg>
-struct ret_type_of_func<Ret(Holder::*)(Arg ...)> {
-    using type = Ret;
+struct func_type_traits<Ret(Holder::*)(Arg ...)> {
+    using ret_type = Ret;
+    using first_param_type = first_of_param_pack_t<Arg ...>;
 };
 
+/**
+ * get return type of function object.
+ */
 template <typename T>
-using ret_type_of_func_t = typename ret_type_of_func<decltype(&T::operator())>::type;
+using ret_type_of_func_t = typename func_type_traits<T>::ret_type;
+
+/**
+ * get first parameter type of function object.
+ */
+template <typename T>
+using first_param_type_of_func_t = typename func_type_traits<T>::first_param_type;
+
 
 
 template <typename T>
