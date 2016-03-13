@@ -90,17 +90,33 @@ struct nterm {
     static constexpr auto v = expression::NonTerminal<T>();
 };
 
-template <typename Functor>
-struct map {
-    static constexpr auto v = expression::CommonMapper<Functor>();
-};
-
 template <typename T, typename M,
         misc::enable_when<expression::is_expr<T>::value &&
                 expression::is_mapper<M>::value> = misc::enabler>
 constexpr expression::MapperAdapter<T, M> operator>>(T expr, M mapper) {
     return expression::MapperAdapter<T, M>(expr, mapper);
 }
+
+template <typename F>
+constexpr expression::CommonMapper<F> map() {
+    return expression::CommonMapper<F>();
+}
+
+template <typename F, typename T>
+constexpr mapper::Joiner<F, T> join(T expr) {
+    return mapper::Joiner<F, T>(expr);
+};
+
+template <typename F, typename T, typename D>
+constexpr mapper::EachJoiner0<F, T, D> join_each0(T expr, D delim) {
+    return mapper::EachJoiner0<F, T, D>(expr, delim);
+};
+
+template <typename F, typename T>
+constexpr mapper::EachJoiner0<F, T, expression::Empty> join_each0(T expr) {
+    return mapper::EachJoiner0<F, T, expression::Empty>(expr, expression::Empty());
+};
+
 
 template <typename T>
 class ParsedResult {

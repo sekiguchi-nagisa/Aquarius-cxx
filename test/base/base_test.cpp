@@ -679,7 +679,7 @@ struct Sum {
 TEST(base, mapper) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] >> map<Sum>::v;
+    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] >> map<Sum>();
     check_same<int>(p);
 
     std::string input("12+18");
@@ -688,6 +688,54 @@ TEST(base, mapper) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
+}
+
+struct StrJoiner {
+    void operator()(std::string &str, std::string &&v) const {
+        str += std::move(v);
+    }
+};
+
+TEST(base, join) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ 'a'_ch ] >> *' '_ch >> join<StrJoiner>(text[ 'b'_ch ]);
+    check_same<std::string>(p);
+
+    std::string input("a     b");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size(), state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r == "ab"));
+}
+
+TEST(base, join_each1) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ 'a'_ch ] >> *' '_ch >> join_each0<StrJoiner>(text[ 'b'_ch ], *' '_ch);
+    check_same<std::string>(p);
+
+    std::string input("a     b    b    b");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size(), state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r == "abbb"));
+}
+
+TEST(base, join_each2) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ 'a'_ch ] >> *' '_ch >> join_each0<StrJoiner>(text[ "hello"_str ]);
+    check_same<std::string>(p);
+
+    std::string input("a     hellohellohello");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size(), state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r == "ahellohellohello"));
 }
 
 

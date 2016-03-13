@@ -22,24 +22,72 @@
 namespace aquarius {
 namespace mapper {
 
+template <typename Functor, typename T>
+struct JoinerBase : expression::MapperImpl<Functor> {
+    static_assert(expression::is_expr<T>::value, "must be Expression");
+
+    using retType =
+        typename std::remove_reference<
+                misc::first_param_type_of_func_t<Functor>
+        >::type;
+
+    static_assert(!std::is_void<retType>::value, "first parameter type of Functor must not be void type");
+
+    static_assert(std::is_void<misc::ret_type_of_func_t<Functor>>::value, "return type of Functor must be void");
+
+    T expr;
+
+    constexpr JoinerBase(T expr) : expression::MapperImpl<Functor>(), expr(expr) { }
+};
 
 
-//template <typename T, typename J>
-//struct join {
-//    static_assert(expression::is_expr<T>::value, "must be expression");
-//
-//    T expr;
-//    J joiner;
-//
-//    constexpr join(T expr) : expr(expr), joiner() { }
-//
-//    template <typename Object>
-//    Object operator()(Object &&o) const {
-//        auto v = this->
-//
-//        return std::move(o);
-//    }
-//};
+template <typename Functor, typename T>
+struct Joiner : JoinerBase<Functor, T> {
+    constexpr Joiner(T expr) : JoinerBase<Functor, T>(expr) { }
+
+    template <typename Iterator, typename Value>
+    typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
+        auto r = this->expr(state);
+        if(state.result()) {
+            this->func(v, std::move(r));
+        }
+        return std::move(v);
+    }
+};
+
+template <typename Functor, typename T, typename D>
+struct EachJoiner0 : JoinerBase<Functor, T> {
+    static_assert(expression::is_expr<D>::value &&
+                          misc::is_unit<typename D::retType>::value, "must be unit type expression");
+
+    D delim;
+
+    constexpr EachJoiner0(T expr, D delim) : JoinerBase<Functor, T>(expr), delim(delim) { }
+
+    template <typename Iterator, typename Value>
+    typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
+        for(size_t index = 0; ; index++) {
+            // match delimiter
+            if(index > 0) {
+                this->delim(state);
+                if(!state.result()) {
+                    break;
+                }
+            }
+
+            // match expression
+            auto r = this->expr(state);
+            if(!state.result()) {
+                break;
+            }
+
+            this->func(v, std::move(r));
+        }
+
+        state.setResult(true);
+        return std::move(v);
+    }
+};
 
 
 } // namespace mapper

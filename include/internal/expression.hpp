@@ -120,6 +120,15 @@ struct Expression { };
 template <typename T>
 struct is_expr : std::is_base_of<Expression, T> { };
 
+struct Empty : Expression {
+    using retType = unit;
+
+    template <typename Iterator>
+    unit operator()(ParserState<Iterator> &state) const {
+        return unit();
+    }
+};
+
 struct Any : Expression {
     using retType = unit;
 
@@ -503,10 +512,6 @@ struct is_mapper : std::is_base_of<Mapper, T> { };
 
 template <typename Functor>
 struct MapperImpl : Mapper {
-    using retType = misc::ret_type_of_func_t<Functor>;
-
-    static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
-
     Functor func;
 
     constexpr MapperImpl() : func() { }
@@ -514,10 +519,13 @@ struct MapperImpl : Mapper {
 
 template <typename Functor>
 struct CommonMapper : MapperImpl<Functor> {
+    using retType = misc::ret_type_of_func_t<Functor>;
+    static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
+
     constexpr CommonMapper() : MapperImpl<Functor>() { }
 
     template <typename Iterator, typename Value>
-    misc::ret_type_of_func_t<Functor> operator()(ParserState<Iterator> &state, Value &&v) const {
+    retType operator()(ParserState<Iterator> &state, Value &&v) const {
         return misc::unpackAndApply(this->func, std::move(v));
     }
 };
