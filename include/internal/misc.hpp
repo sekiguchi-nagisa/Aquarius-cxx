@@ -50,6 +50,22 @@ struct param_type_of<T<P>> {
 template <typename T>
 using param_type_of_t = typename param_type_of<T>::paramType;
 
+template <typename T>
+struct ret_type_of_func { };
+
+template <typename Holder, typename Ret, typename ... Arg>
+struct ret_type_of_func<Ret(Holder::*)(Arg ...) const> {
+    using type = Ret;
+};
+
+template <typename Holder, typename Ret, typename ... Arg>
+struct ret_type_of_func<Ret(Holder::*)(Arg ...)> {
+    using type = Ret;
+};
+
+template <typename T>
+using ret_type_of_func_t = typename ret_type_of_func<decltype(&T::operator())>::type;
+
 
 /**
  * check whether value is constant or not
