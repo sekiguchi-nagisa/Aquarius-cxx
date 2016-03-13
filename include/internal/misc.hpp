@@ -67,14 +67,6 @@ template <typename T>
 using ret_type_of_func_t = typename ret_type_of_func<decltype(&T::operator())>::type;
 
 
-/**
- * check whether value is constant or not
- */
-template <typename T>
-constexpr bool isConstant(T) {
-    return true;
-}
-
 template <typename T>
 class NonCopyable {
 protected:

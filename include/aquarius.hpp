@@ -18,6 +18,7 @@
 #define AQUARIUS_CXX_AQUARIUS_HPP
 
 #include "internal/expression.hpp"
+#include "internal/mapper.hpp"
 
 namespace aquarius {
 
@@ -47,48 +48,57 @@ constexpr expression::Any ANY;
 
 constexpr expression::CaptureHolder text;
 
-template <typename T>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr expression::ZeroMore<T> operator*(T expr) {
     return expression::ZeroMore<T>(expr);
 }
 
-template <typename T>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr expression::OneMore<T> operator+(T expr) {
     return expression::OneMore<T>(expr);
 }
 
-template <typename T>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr expression::Option<T> operator-(T expr) {
     return expression::Option<T>(expr);
 }
 
-template <typename T>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr expression::NotPredicate<T> operator!(T expr) {
     return expression::NotPredicate<T>(expr);
 }
 
-template <typename T>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr auto operator&(T expr) -> decltype(!(!expr)) {
     return !(!expr);
 }
 
-template <typename L, typename R>
+template <typename L, typename R,
+        misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
 constexpr expression::Sequence<L, R> operator>>(L left, R right) {
     return expression::Sequence<L, R>(left, right);
 };
 
-template <typename L, typename R>
+template <typename L, typename R,
+        misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
 constexpr expression::Choice<L, R> operator|(L left, R right) {
     return expression::Choice<L, R>(left, right);
 };
 
 template <typename T>
 struct nterm {
-    static constexpr expression::NonTerminal<T> v = expression::NonTerminal<T>();
+    static constexpr auto v = expression::NonTerminal<T>();
 };
 
-template <typename T, typename M>
-constexpr expression::MapperAdapter<T, M> operator&&(T expr, M mapper) {
+template <typename Functor>
+struct map {
+    static constexpr auto v = expression::CommonMapper<Functor>();
+};
+
+template <typename T, typename M,
+        misc::enable_when<expression::is_expr<T>::value &&
+                expression::is_mapper<M>::value> = misc::enabler>
+constexpr expression::MapperAdapter<T, M> operator>>(T expr, M mapper) {
     return expression::MapperAdapter<T, M>(expr, mapper);
 }
 

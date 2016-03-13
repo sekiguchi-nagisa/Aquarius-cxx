@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <functional>
 
 #include "state.hpp"
 #include "misc.hpp"
@@ -116,6 +117,9 @@ namespace expression {
 
 struct Expression { };
 
+template <typename T>
+struct is_expr : std::is_base_of<Expression, T> { };
+
 struct Any : Expression {
     using retType = unit;
 
@@ -201,7 +205,7 @@ struct CharClass : Expression {
 
 template <typename T>
 struct ZeroMore : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+    static_assert(is_expr<T>::value, "must be Expression");
 
     using exprType = typename T::retType;
     using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
@@ -238,7 +242,7 @@ struct ZeroMore : Expression {
 
 template <typename T>
 struct OneMore : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+    static_assert(is_expr<T>::value, "must be Expression");
 
     using exprType = typename T::retType;
     using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
@@ -278,7 +282,7 @@ struct OneMore : Expression {
 
 template <typename T>
 struct Option : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+    static_assert(is_expr<T>::value, "must be Expression");
 
     using exprType = typename T::retType;
     using retType = misc::unaryRetTypeHelper<exprType, Optional<exprType>>;
@@ -313,7 +317,7 @@ struct Option : Expression {
 
 template <typename T>
 struct NotPredicate : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+    static_assert(is_expr<T>::value, "must be Expression");
 
     using exprType = typename T::retType;
 
@@ -341,7 +345,7 @@ struct NotPredicate : Expression {
 
 template <typename T>
 struct Capture : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+    static_assert(is_expr<T>::value, "must be Expression");
 
     using exprType = typename T::retType;
     using retType = std::string;
@@ -375,8 +379,7 @@ struct CaptureHolder {
 
 template <typename L, typename R>
 struct Sequence : Expression {
-    static_assert(std::is_base_of<Expression, L>::value &&
-                  std::is_base_of<Expression, R>::value, "must be Expression");
+    static_assert(is_expr<L>::value && is_expr<R>::value, "must be Expression");
 
     using leftType = typename L::retType;
     using rightType = typename R::retType;
@@ -452,8 +455,7 @@ struct Sequence : Expression {
 
 template <typename L, typename R>
 struct Choice : Expression {
-    static_assert(std::is_base_of<Expression, L>::value &&
-                  std::is_base_of<Expression, R>::value, "must be Expression");
+    static_assert(is_expr<L>::value && is_expr<R>::value, "must be Expression");
 
     using leftType = typename L::retType;
     using rightType = typename R::retType;
@@ -491,15 +493,44 @@ struct NonTerminal : Expression {
     }
 };
 
+
+// for mapper
+
+struct Mapper {};
+
+template <typename T>
+struct is_mapper : std::is_base_of<Mapper, T> { };
+
+template <typename Functor>
+struct MapperImpl : Mapper {
+    using retType = misc::ret_type_of_func_t<Functor>;
+
+    static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
+
+    Functor func;
+
+    constexpr MapperImpl() : func() { }
+};
+
+template <typename Functor>
+struct CommonMapper : MapperImpl<Functor> {
+    constexpr CommonMapper() : MapperImpl<Functor>() { }
+
+    template <typename Iterator, typename Value>
+    misc::ret_type_of_func_t<Functor> operator()(ParserState<Iterator> &state, Value &&v) const {
+        return misc::unpackAndApply(this->func, std::move(v));
+    }
+};
+
 template <typename T, typename M>
 struct MapperAdapter : Expression {
-    static_assert(std::is_base_of<Expression, T>::value, "must be Expression");
+    static_assert(is_expr<T>::value, "must be Expression");
+    static_assert(is_mapper<M>::value, "must be Mapper");
 
     T expr;
     M mapper;
 
-    using retType = decltype(misc::unpackAndApply(mapper, typename T::retType()));
-    static_assert(!std::is_void<retType>::value, "return type of mapper must not be void");
+    using retType = typename M::retType;
 
     constexpr MapperAdapter(T expr, M mapper) : expr(expr), mapper(mapper) { }
 
@@ -508,7 +539,7 @@ struct MapperAdapter : Expression {
         auto v = this->expr(state);
         retType r;
         if(state.result()) {
-            r = misc::unpackAndApply(this->mapper, std::move(v));
+            r = this->mapper(state, std::move(v));
         }
         return std::move(r);
     }

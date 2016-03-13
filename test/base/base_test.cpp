@@ -679,7 +679,7 @@ struct Sum {
 TEST(base, mapper) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] && Sum();
+    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] >> map<Sum>::v;
     check_same<int>(p);
 
     std::string input("12+18");
