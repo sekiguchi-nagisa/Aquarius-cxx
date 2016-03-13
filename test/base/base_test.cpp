@@ -690,6 +690,19 @@ TEST(base, mapper) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
 }
 
+TEST(base, constructor) {
+    using namespace aquarius;
+
+    constexpr auto p = ANY >> construct<std::string>();
+    check_same<std::string>(p);
+
+    std::string input("3");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+}
+
+
 struct StrJoiner {
     void operator()(std::string &str, std::string &&v) const {
         str += std::move(v);

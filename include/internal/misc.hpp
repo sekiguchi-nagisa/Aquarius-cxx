@@ -40,26 +40,19 @@ template <bool cond>
 using enable_when = enable_if_t<cond, void> *&;
 
 /**
- * get type parameter of specialized template.
+ * check whether a type is specialization of a specified template.
  */
-template <typename T>
-struct param_type_of { };
+template <typename C, template <typename ...> class T>
+struct is_specialization_of : std::false_type { };
 
-template <template <typename> class T, typename P>
-struct param_type_of<T<P>> {
-    using paramType = P;
-};
-
-template <typename T>
-using param_type_of_t = typename param_type_of<T>::paramType;
+template <template <typename ...> class T, typename ... P>
+struct is_specialization_of<T<P...>, T> : std::true_type { };
 
 /**
  * get first type of type parameter pack.
  */
 template <typename ... Arg>
-struct first_of_param_pack {
-    using type = void;
-};
+struct first_of_param_pack { };
 
 template <typename First, typename ... Arg>
 struct first_of_param_pack<First, Arg ...> {
@@ -70,10 +63,37 @@ template <typename ... T>
 using first_of_param_pack_t = typename first_of_param_pack<T...>::type;
 
 /**
+ * get first type parameter of specialized template.
+ */
+template <typename T>
+struct param_type_of { };
+
+template <template <typename ...> class T, typename ... P>
+struct param_type_of<T<P ...>> {
+    using paramType = first_of_param_pack_t<P ...>;
+};
+
+template <typename T>
+using param_type_of_t = typename param_type_of<T>::paramType;
+
+
+/**
  * for function object traits.
  */
 template <typename T>
 struct func_type_traits : func_type_traits<decltype(&T::operator())> { };
+
+template <typename Holder, typename Ret>
+struct func_type_traits<Ret(Holder::*)() const> {
+    using ret_type = Ret;
+    using first_param_type = void;
+};
+
+template <typename Holder, typename Ret>
+struct func_type_traits<Ret(Holder::*)()> {
+    using ret_type = Ret;
+    using first_param_type = void;
+};
 
 template <typename Holder, typename Ret, typename ... Arg>
 struct func_type_traits<Ret(Holder::*)(Arg ...) const> {

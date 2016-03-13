@@ -54,23 +54,18 @@ struct Cat {
     }
 };
 
-TEST(tuple, unpack1) {
-    Negate negate;
-
-    static_assert(std::is_same<int, decltype(misc::unpackAndApply(negate, 1))>::value, "must be int");
-    auto r = misc::unpackAndApply(negate, 1);
+TEST(tuple, apply1) {
+    static_assert(std::is_same<int, decltype(misc::unpackAndApply<Negate>(1))>::value, "must be int");
+    auto r = misc::unpackAndApply<Negate>(1);
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(-1, r));
 }
 
-TEST(tuple, unpack2) {
-    Sum sum;
-
-    static_assert(std::is_same<int, decltype(misc::unpackAndApply(sum, std::make_tuple(1, 2)))>::value, "must be int");
-    auto r = misc::unpackAndApply(sum, std::make_tuple(1, 2));
+TEST(tuple, apply2) {
+    static_assert(std::is_same<int, decltype(misc::unpackAndApply<Sum>(std::make_tuple(1, 2)))>::value, "must be int");
+    auto r = misc::unpackAndApply<Sum>(std::make_tuple(1, 2));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3, r));
 
-    Cat cat;
-    auto v = misc::unpackAndApply(cat, std::make_tuple(std::string("hello "), std::string("world")));
+    auto v = misc::unpackAndApply<Cat>(std::make_tuple(std::string("hello "), std::string("world")));
     static_assert(std::is_same<std::string, decltype(v)>::value, "must be int");
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ("hello world", v));
 }
@@ -82,10 +77,8 @@ struct Unwrap {
     }
 };
 
-TEST(tuple, unpack3) {
-    Unwrap unwrap;
-
-    auto r = misc::unpackAndApply(unwrap, std::make_tuple(Optional<int>(100)));
+TEST(tuple, apply3) {
+    auto r = misc::unpackAndApply<Unwrap>(std::make_tuple(Optional<int>(100)));
     static_assert(std::is_same<int, decltype(r)>::value, "must be int");
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(100, r));
 }
@@ -96,12 +89,34 @@ struct Produce {
     }
 };
 
-TEST(tuple, unpack4) {
-    Produce p;
-
-    auto r = misc::unpackAndApply(p, unit());
+TEST(tuple, apply4) {
+    auto r = misc::unpackAndApply<Produce>(unit());
     static_assert(std::is_same<bool, decltype(r)>::value, "must be bool");
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r));
+}
+
+TEST(tuple, construct1) {
+    auto r = misc::unpackAndConstruct<std::string>(unit());
+    static_assert(std::is_same<std::string, decltype(r)>::value, "must be same type");
+
+    auto r2 = misc::unpackAndConstruct<std::string>(std::move(r));
+    static_assert(std::is_same<std::string, decltype(r2)>::value, "must be same type");
+
+    auto r3 = misc::unpackAndConstruct<std::string>(std::make_tuple("hello", 2));
+    static_assert(std::is_same<std::string, decltype(r3)>::value, "must be same type");
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r3 == "he"));
+}
+
+struct Hoge {
+    int v;
+
+    Hoge(int v) : v(v) {}
+};
+
+TEST(tuple, construct2) {
+    auto r = misc::unpackAndConstruct<std::unique_ptr<Hoge>>(std::make_tuple(10));
+    static_assert(std::is_same<std::unique_ptr<Hoge>, decltype(r)>::value, "must be same type");
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(10, r->v));
 }
 
 

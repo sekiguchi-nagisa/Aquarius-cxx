@@ -22,8 +22,30 @@
 namespace aquarius {
 namespace mapper {
 
+template <typename Functor>
+struct CommonMapper : expression::Mapper {
+    using retType = misc::ret_type_of_func_t<Functor>;
+    static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
+
+    template <typename Iterator, typename Value>
+    retType operator()(ParserState<Iterator> &state, Value &&v) const {
+        return misc::unpackAndApply<Functor>(std::move(v));
+    }
+};
+
+template <typename T>
+struct Constructor : expression::Mapper {
+    using retType = T;
+    static_assert(!std::is_void<retType>::value, "must not be void");
+
+    template <typename Iterator, typename Value>
+    retType operator()(ParserState<Iterator> &state, Value &&v) const {
+        return misc::unpackAndConstruct<T>(std::move(v));
+    }
+};
+
 template <typename Functor, typename T>
-struct JoinerBase : expression::MapperImpl<Functor> {
+struct JoinerBase : expression::Mapper {
     static_assert(expression::is_expr<T>::value, "must be Expression");
 
     using retType =
@@ -37,7 +59,7 @@ struct JoinerBase : expression::MapperImpl<Functor> {
 
     T expr;
 
-    constexpr JoinerBase(T expr) : expression::MapperImpl<Functor>(), expr(expr) { }
+    constexpr JoinerBase(T expr) : expr(expr) { }
 };
 
 
@@ -49,7 +71,7 @@ struct Joiner : JoinerBase<Functor, T> {
     typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
         auto r = this->expr(state);
         if(state.result()) {
-            this->func(v, std::move(r));
+            Functor()(v, std::move(r));
         }
         return std::move(v);
     }
@@ -81,7 +103,7 @@ struct EachJoiner0 : JoinerBase<Functor, T> {
                 break;
             }
 
-            this->func(v, std::move(r));
+            Functor()(v, std::move(r));
         }
 
         state.setResult(true);

@@ -510,26 +510,6 @@ struct Mapper {};
 template <typename T>
 struct is_mapper : std::is_base_of<Mapper, T> { };
 
-template <typename Functor>
-struct MapperImpl : Mapper {
-    Functor func;
-
-    constexpr MapperImpl() : func() { }
-};
-
-template <typename Functor>
-struct CommonMapper : MapperImpl<Functor> {
-    using retType = misc::ret_type_of_func_t<Functor>;
-    static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
-
-    constexpr CommonMapper() : MapperImpl<Functor>() { }
-
-    template <typename Iterator, typename Value>
-    retType operator()(ParserState<Iterator> &state, Value &&v) const {
-        return misc::unpackAndApply(this->func, std::move(v));
-    }
-};
-
 template <typename T, typename M>
 struct MapperAdapter : Expression {
     static_assert(is_expr<T>::value, "must be Expression");

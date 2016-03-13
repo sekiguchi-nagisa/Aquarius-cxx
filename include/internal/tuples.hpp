@@ -18,6 +18,7 @@
 #define AQUARIUS_CXX_INTERNAL_TUPLES_HPP
 
 #include <tuple>
+#include <memory>
 
 #include "misc.hpp"
 
@@ -63,35 +64,80 @@ inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), st
 };
 
 /**
- * for tuple unpacking
+ * apply function object with tuple argument.
  */
 template <typename Func, typename ... A, typename ... Arg,
         enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
-inline auto unpackAndApplyImpl(Func &func, std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(func(A() ...)) {
-    return func(std::forward<Arg>(arg)...);
+inline auto unpackAndApplyImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(Func()(A() ...)) {
+    return Func()(std::forward<Arg>(arg)...);
 }
 
 template <typename Func, typename ... A, typename ... Arg,
         enable_when<(sizeof...(A) > sizeof...(Arg))> = enabler>
-inline auto unpackAndApplyImpl(Func &func, std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(func(A() ...)) {
-    return unpackAndApplyImpl(func, std::move(tuple),
+inline auto unpackAndApplyImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(Func()(A() ...)) {
+    return unpackAndApplyImpl<Func>(std::move(tuple),
                               std::forward<Arg>(arg)..., std::move(std::get<sizeof...(Arg)>(tuple)));
 }
 
 
 template <typename Func, typename ... A>
-inline auto unpackAndApply(Func &func, std::tuple<A ...> &&tuple) -> decltype(func(A() ...)) {
-    return unpackAndApplyImpl(func, std::move(tuple));
+inline auto unpackAndApply(std::tuple<A ...> &&tuple) -> decltype(Func()(A() ...)) {
+    return unpackAndApplyImpl<Func>(std::move(tuple));
 };
 
 template <typename Func, typename A>
-inline auto unpackAndApply(Func &func, A &&arg) -> decltype(func(std::forward<A>(arg))) {
-    return func(std::forward<A>(arg));
+inline auto unpackAndApply(A &&arg) -> decltype(Func()(std::forward<A>(arg))) {
+    return Func()(std::forward<A>(arg));
 };
 
 template <typename Func>
-inline auto unpackAndApply(Func &func, unit &&arg) -> decltype(func()) {
-    return func();
+inline auto unpackAndApply(unit &&arg) -> decltype(Func()()) {
+    return Func()();
+}
+
+/**
+ * construct object with tuple argument.
+ */
+template <typename T, typename ... Arg,
+        enable_when<!is_specialization_of<T, std::unique_ptr>::value> = enabler>
+inline T construct(Arg && ...arg) {
+    return T(std::forward<Arg>(arg)...);
+};
+
+template <typename T, typename ... Arg,
+        enable_when<is_specialization_of<T, std::unique_ptr>::value> = enabler>
+inline T construct(Arg && ...arg) {
+    using P = param_type_of_t<T>;
+    return T(new P(std::forward<Arg>(arg)...));
+};
+
+template <typename T, typename ... A, typename ... Arg,
+        enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
+inline T unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
+    return construct<T>(std::forward<Arg>(arg)...);
+}
+
+template <typename T, typename ... A, typename ... Arg,
+        enable_when<(sizeof...(A) > sizeof...(Arg))> = enabler>
+inline T unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
+    return unpackAndConstructImpl<T>(
+            std::move(tuple), std::forward<Arg>(arg)..., std::move(std::get<sizeof...(Arg)>(tuple)));
+}
+
+
+template <typename T, typename ... A>
+inline T unpackAndConstruct(std::tuple<A ...> &&tuple) {
+    return unpackAndConstructImpl<T>(std::move(tuple));
+};
+
+template <typename T, typename A>
+inline T unpackAndConstruct(A &&arg) {
+    return construct<T>(std::forward<A>(arg));
+};
+
+template <typename T>
+inline T unpackAndConstruct(unit &&arg) {
+    return construct<T>();
 }
 
 

@@ -98,8 +98,18 @@ constexpr expression::MapperAdapter<T, M> operator>>(T expr, M mapper) {
 }
 
 template <typename F>
-constexpr expression::CommonMapper<F> map() {
-    return expression::CommonMapper<F>();
+constexpr mapper::CommonMapper<F> map() {
+    return mapper::CommonMapper<F>();
+}
+
+template <typename T>
+constexpr mapper::Constructor<T> construct() {
+    return mapper::Constructor<T>();
+}
+
+template <typename T>
+constexpr mapper::Constructor<std::unique_ptr<T>> cons_unique() {
+    return mapper::Constructor<std::unique_ptr<T>>();
 }
 
 template <typename F, typename T>

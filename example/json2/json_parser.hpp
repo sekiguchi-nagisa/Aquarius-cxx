@@ -31,12 +31,6 @@ struct ToNumber {
     }
 };
 
-struct ToString {
-    std::unique_ptr<JSONString> operator()(std::string &&str) const {
-        return make_unique<JSONString>(std::move(str));
-    }
-};
-
 struct ToTrue {
     std::unique_ptr<JSONBool> operator()() const {
         return make_unique<JSONBool>(true);
@@ -49,28 +43,10 @@ struct ToFalse {
     }
 };
 
-struct ToNull {
-    std::unique_ptr<JSONNull> operator()() const {
-        return make_unique<JSONNull>();
-    }
-};
-
-struct ToObject {
-    std::unique_ptr<JSONObject> operator()() const {
-        return make_unique<JSONObject>();
-    }
-};
-
 struct AppendToObject {
     void operator()(std::unique_ptr<JSONObject> &json,
                     std::tuple<std::unique_ptr<JSONString>, std::unique_ptr<JSON>> &&t) const {
         json->value().insert(std::make_pair(std::get<0>(std::move(t)), std::get<1>(std::move(t))));
-    }
-};
-
-struct ToArray {
-    std::unique_ptr<JSONArray> operator()() const {
-        return make_unique<JSONArray>();
     }
 };
 
@@ -101,7 +77,7 @@ constexpr auto kvSep = space >> ':'_ch >> space;
 constexpr auto vSep = ','_ch >> space;
 
 constexpr auto escape = '\\'_ch >> set('"', '\\', '/', 'b', 'f', 'n', 'r', 't');
-constexpr auto string = text[ '"'_ch >> *(escape | !set('"', '\\') >> ANY) >> '"'_ch ] >> map<ToString>();
+constexpr auto string = text[ '"'_ch >> *(escape | !set('"', '\\') >> ANY) >> '"'_ch ] >> cons_unique<JSONString>();
 
 constexpr auto integer = '0'_ch | set(r('1', '9')) >> *set(r('0', '9'));
 constexpr auto exp = set('E', 'e') >> -set('+', '-') >> integer;
@@ -119,7 +95,7 @@ AQUARIUS_DEFINE_RULE(
          | nterm<array>::v
          | "true"_str >> map<ToTrue>()
          | "false"_str >> map<ToFalse>()
-         | "null"_str >> map<ToNull>()
+         | "null"_str >> cons_unique<JSONNull>()
         ) >> space
 );
 
@@ -127,12 +103,14 @@ constexpr auto keyValue = string >> kvSep >> nterm<value>::v >> space;
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSONArray>, array,
-        arrayOpen >> map<ToArray>() >> join_each0<AppendToArray>(nterm<value>::v, vSep) >> arrayClose
+        arrayOpen >> cons_unique<JSONArray>() >>
+                join_each0<AppendToArray>(nterm<value>::v, vSep) >> arrayClose
 );
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSONObject>, object,
-        objectOpen >> map<ToObject>() >> join_each0<AppendToObject>(keyValue, vSep) >> objectClose
+        objectOpen >> cons_unique<JSONObject>() >>
+                join_each0<AppendToObject>(keyValue, vSep) >> objectClose
 );
 
 AQUARIUS_DEFINE_RULE(
