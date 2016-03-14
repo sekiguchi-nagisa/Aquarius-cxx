@@ -27,7 +27,7 @@ TEST(base, any) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = ANY(state);
+        ANY(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
     });
@@ -37,7 +37,7 @@ TEST(base, any) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = ANY(state);
+        ANY(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -53,7 +53,7 @@ TEST(base, string1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
     });
@@ -63,7 +63,7 @@ TEST(base, string1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
          ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -73,7 +73,7 @@ TEST(base, string1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -89,7 +89,7 @@ TEST(base, string2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(3, state.cursor() - state.begin());
     });
@@ -99,7 +99,7 @@ TEST(base, string2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -109,7 +109,7 @@ TEST(base, string2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -125,7 +125,7 @@ TEST(base, charClass1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
     });
@@ -135,7 +135,7 @@ TEST(base, charClass1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -145,7 +145,7 @@ TEST(base, charClass1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -161,15 +161,15 @@ TEST(base, charClass2) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(1, state.cursor() - state.begin());
 
-        r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(2, state.cursor() - state.begin());
 
-        r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(3, state.cursor() - state.begin());
     });
@@ -179,7 +179,7 @@ TEST(base, charClass2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -189,7 +189,7 @@ TEST(base, charClass2) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -206,7 +206,7 @@ TEST(base, charClass3) {
 
     for(unsigned int i = 0; i < input.size(); i++) {
         ASSERT_NO_FATAL_FAILURE({
-            auto r = p(state);
+            p(state);
             ASSERT_TRUE(state.result());
             ASSERT_EQ(i + 1, state.cursor() - state.begin());
         });
@@ -217,7 +217,7 @@ TEST(base, charClass3) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -227,7 +227,7 @@ TEST(base, charClass3) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -243,7 +243,7 @@ TEST(base, andPredicate) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -253,7 +253,7 @@ TEST(base, andPredicate) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -269,7 +269,7 @@ TEST(base, notPredicate) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -279,7 +279,7 @@ TEST(base, notPredicate) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -322,7 +322,7 @@ TEST(base, zeroMore1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(8, state.cursor() - state.begin());
     });
@@ -331,7 +331,7 @@ TEST(base, zeroMore1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -378,7 +378,7 @@ TEST(base, oneMore1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(8, state.cursor() - state.begin());
     });
@@ -388,7 +388,7 @@ TEST(base, oneMore1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
@@ -435,14 +435,14 @@ TEST(base, option1) {
     std::string input("hello");
     auto state = createState(input.begin(), input.end());
 
-    auto result = p(state);
+    p(state);
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5, state.cursor() - state.begin()));
 
     input = "hel";
     state = createState(input.begin(), input.end());
 
-    result = p(state);
+    p(state);
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0, state.cursor() - state.begin()));
 }
@@ -482,7 +482,7 @@ TEST(base, seq1) {
     auto state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_TRUE(state.result());
         ASSERT_EQ(11, state.cursor() - state.begin());
     });
@@ -492,7 +492,7 @@ TEST(base, seq1) {
     state = createState(input.begin(), input.end());
 
     ASSERT_NO_FATAL_FAILURE({
-        auto r = p(state);
+        p(state);
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0, state.cursor() - state.begin());
     });
