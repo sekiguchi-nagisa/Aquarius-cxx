@@ -48,15 +48,25 @@ constexpr expression::Any ANY;
 
 constexpr expression::CaptureHolder text;
 
-template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
-constexpr expression::ZeroMore<T> operator*(T expr) {
-    return expression::ZeroMore<T>(expr);
+template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T, typename D>
+constexpr expression::Repeat<T, D, Low, High> repeat(T expr, D delim) {
+    return expression::Repeat<T, D, Low, High>(expr, delim);
+}
+
+template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T>
+constexpr expression::Repeat<T, expression::Empty, Low, High> repeat(T expr) {
+    return expression::Repeat<T, expression::Empty, Low, High>(expr, expression::Empty());
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
-constexpr expression::OneMore<T> operator+(T expr) {
-    return expression::OneMore<T>(expr);
-}
+constexpr auto operator*(T expr) -> decltype(repeat(expr)) {
+    return repeat(expr);
+};
+
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
+constexpr auto operator+(T expr) -> decltype(repeat<1>(expr)) {
+    return repeat<1>(expr);
+};
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr expression::Option<T> operator-(T expr) {

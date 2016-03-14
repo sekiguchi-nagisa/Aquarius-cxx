@@ -212,62 +212,42 @@ struct CharClass : Expression {
     }
 };
 
-template <typename T>
-struct ZeroMore : Expression {
+template <typename T, typename D, size_t Low = 0, size_t High = static_cast<size_t>(-1)>
+struct Repeat : Expression {
     static_assert(is_expr<T>::value, "must be Expression");
+    static_assert(is_expr<D>::value, "must be Expression");
+    static_assert(misc::is_unit<typename D::retType>::value, "must be unit expression");
+    static_assert(Low < High, "invalid interval");
 
     using exprType = typename T::retType;
     using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
 
     T expr;
+    D delim;
 
-    constexpr explicit ZeroMore(T expr) : expr(expr) { }
+    constexpr Repeat(T expr, D delim) : expr(expr), delim(delim) { }
 
     template <typename Iterator, typename P = exprType,
             misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
     unit operator()(ParserState<Iterator> &state) const {
-        do {
-            this->expr(state);
-        } while(state.result());
-        state.setResult(true);
-        return unit();
-    }
+        size_t index = 0;
+        for(; index < High; index++) {
+            // match delimiter
+            if(!std::is_same<D, Empty>::value && index > 0) {
+                this->delim(state);
+                if(!state.result()) {
+                    break;
+                }
+            }
 
-    template <typename Iterator, typename P = exprType,
-            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
-    std::vector<exprType> operator()(ParserState<Iterator> &state) const {
-        std::vector<exprType> value;
-        while(true) {
-            auto v = this->expr(state);
+            // match expression
+            this->expr(state);
             if(!state.result()) {
                 break;
             }
-            value.push_back(std::move(v));
         }
-        state.setResult(true);
-        return std::move(value);
-    }
-};
 
-template <typename T>
-struct OneMore : Expression {
-    static_assert(is_expr<T>::value, "must be Expression");
-
-    using exprType = typename T::retType;
-    using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
-
-    T expr;
-
-    constexpr explicit OneMore(T expr) : expr(expr) { }
-
-    template <typename Iterator, typename P = exprType,
-            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
-    unit operator()(ParserState<Iterator> &state) const {
-        this->expr(state);
-        if(state.result()) {
-            do {
-                this->expr(state);
-            } while(state.result());
+        if(index >= Low) {
             state.setResult(true);
         }
         return unit();
@@ -277,12 +257,27 @@ struct OneMore : Expression {
             misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
     std::vector<exprType> operator()(ParserState<Iterator> &state) const {
         std::vector<exprType> value;
-        auto v = this->expr(state);
-        if(state.result()) {
-            do {
-                value.push_back(std::move(v));
-                v = this->expr(state);
-            } while(state.result());
+
+        size_t index = 0;
+        for(; index < High; index++) {
+            // match delimiter
+            if(!std::is_same<D, Empty>::value && index > 0) {
+                this->delim(state);
+                if(!state.result()) {
+                    break;
+                }
+            }
+
+            // match expression
+            auto v = this->expr(state);
+            if(!state.result()) {
+                break;
+            }
+
+            value.push_back(std::move(v));
+        }
+
+        if(index >= Low) {
             state.setResult(true);
         }
         return std::move(value);

@@ -426,6 +426,72 @@ TEST(base, oneMore2) {
     });
 }
 
+TEST(base, repeat1) {
+    using namespace aquarius;
+
+    constexpr auto p = repeat<2, 4>('a'_ch, *' '_ch);
+    check_unit(p);
+
+    std::string input("a a a a");
+    auto state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size(), state.cursor() - state.begin()));
+
+    // failed case1
+    input = "a a a a a";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size() - 2, state.cursor() - state.begin()));
+
+    // failed case2
+    input = "a ";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(2, state.cursor() - state.begin()));
+}
+
+TEST(base, repeat2) {
+    using namespace aquarius;
+
+    constexpr auto p = repeat<2, 4>(text [ 'a'_ch ], *' '_ch);
+    check_same<std::vector<std::string>>(p);
+
+    std::string input("a a a a");
+    auto state = createState(input.begin(), input.end());
+
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size(), state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(4, r.size()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE("a" == r[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE("a" == r[1]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE("a" == r[2]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE("a" == r[3]));
+
+    // failed case1
+    input = "a a a a a";
+    state = createState(input.begin(), input.end());
+
+    r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(input.size() - 2, state.cursor() - state.begin()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(4, r.size()));
+
+    // failed case2
+    input = "a ";
+    state = createState(input.begin(), input.end());
+
+    r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(2, state.cursor() - state.begin()));
+}
+
 TEST(base, option1) {
     using namespace aquarius;
 
