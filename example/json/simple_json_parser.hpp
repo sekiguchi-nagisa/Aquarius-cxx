@@ -42,30 +42,30 @@ constexpr auto exp = set('E', 'e') >> -set('+', '-') >> integer;
 constexpr auto number = -'-'_ch >> integer >> '.'_ch >> +(set(r('0', '9'))) >> -exp
                         | -'-'_ch >> integer;
 
-AQUARIUS_DECL_RULE(unit, object);
-AQUARIUS_DECL_RULE(unit, array);
+AQUARIUS_DECL_RULE(void, object);
+AQUARIUS_DECL_RULE(void, array);
 
 AQUARIUS_DEFINE_RULE(
-        unit, value,
+        void, value,
         (string | number | nterm<object>::v | nterm<array>::v | "true"_str | "false"_str | "null"_str) >> space
 );
 
 AQUARIUS_DEFINE_RULE(
-        unit, keyValue,
+        void, keyValue,
         string >> kvSep >> nterm<value>::v >> space
 );
 
 AQUARIUS_DEFINE_RULE(
-        unit, array,
+        void, array,
         arrayOpen >> -(nterm<value>::v >> *(vSep >> nterm<value>::v)) >> arrayClose
 );
 
 AQUARIUS_DEFINE_RULE(
-        unit, object,
+        void, object,
         objectOpen >> -(nterm<keyValue>::v >> *(vSep >> nterm<keyValue>::v)) >> objectClose
 );
 
-AQUARIUS_DEFINE_RULE(unit, json,
+AQUARIUS_DEFINE_RULE(void, json,
                      space >> (nterm<object>::v | nterm<array>::v)
 );
 

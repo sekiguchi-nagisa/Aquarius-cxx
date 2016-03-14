@@ -90,13 +90,13 @@ struct Produce {
 };
 
 TEST(tuple, apply4) {
-    auto r = misc::unpackAndApply<Produce>(unit());
+    auto r = misc::unpackAndApply<Produce>();
     static_assert(std::is_same<bool, decltype(r)>::value, "must be bool");
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r));
 }
 
 TEST(tuple, construct1) {
-    auto r = misc::unpackAndConstruct<std::string>(unit());
+    auto r = misc::unpackAndConstruct<std::string>();
     static_assert(std::is_same<std::string, decltype(r)>::value, "must be same type");
 
     auto r2 = misc::unpackAndConstruct<std::string>(std::move(r));

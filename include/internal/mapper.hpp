@@ -31,6 +31,11 @@ struct CommonMapper : expression::Mapper {
     retType operator()(ParserState<Iterator> &state, Value &&v) const {
         return misc::unpackAndApply<Functor>(std::move(v));
     }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &state) const {
+        return misc::unpackAndApply<Functor>();
+    }
 };
 
 template <typename T, bool useSmartPtr = false>
@@ -41,6 +46,11 @@ struct Constructor : expression::Mapper {
     template <typename Iterator, typename Value>
     retType operator()(ParserState<Iterator> &state, Value &&v) const {
         return misc::unpackAndConstruct<T, useSmartPtr>(std::move(v));
+    }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &state) const {
+        return misc::unpackAndConstruct<T, useSmartPtr>();
     }
 };
 
@@ -54,7 +64,7 @@ struct Supplier : expression::Mapper {
     constexpr Supplier(T constant) : constant(constant) { }
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &, unit &&) const {
+    retType operator()(ParserState<Iterator> &) const {
         return this->constant;
     }
 };
@@ -95,7 +105,7 @@ struct Joiner : JoinerBase<Functor, T> {
 template <typename Functor, typename T, typename D, size_t Low = 0, size_t High = static_cast<size_t>(-1)>
 struct EachJoiner : JoinerBase<Functor, T> {
     static_assert(expression::is_expr<D>::value &&
-                          misc::is_unit<typename D::retType>::value, "must be unit type expression");
+                          std::is_void<typename D::retType>::value, "must be void type expression");
 
     D delim;
 

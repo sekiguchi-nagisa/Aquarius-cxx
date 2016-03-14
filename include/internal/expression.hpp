@@ -92,25 +92,6 @@ constexpr AsciiMap makeFromRange(char start, char stop) {
                         : throw std::logic_error("start is less than stop");
 }
 
-/**
- * for expression return type resolving
- */
-template <typename T, typename V>
-using unaryRetTypeHelper = 
-    typename std::conditional< is_unit<T>::value, 
-            unit, V
-    >::type;
-
-template <typename L, typename R>
-using seqRetTypeHelper =
-    typename std::conditional< is_unit<L>::value && is_unit<R>::value, 
-            unit, typename std::conditional< is_unit<L>::value, 
-                    R, typename std::conditional< is_unit<R>::value, 
-                            L, decltype(catAsTuple(L(), R()))
-                    >::type
-            >::type
-    >::type;
-
 } // namespace misc
 
 namespace expression {
@@ -121,34 +102,31 @@ template <typename T>
 struct is_expr : std::is_base_of<Expression, T> { };
 
 struct Empty : Expression {
-    using retType = unit;
+    using retType = void;
 
     constexpr Empty() { }
 
     template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
-        return unit();
-    }
+    void operator()(ParserState<Iterator> &state) const { }
 };
 
 struct Any : Expression {
-    using retType = unit;
+    using retType = void;
 
     constexpr Any() { }
 
     template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
+    void operator()(ParserState<Iterator> &state) const {
         if(state.cursor() == state.end()) {
             state.reportFailure();
         } else {
             ++state.cursor();
         }
-        return unit();
     }
 };
 
 struct StringLiteral : Expression {
-    using retType = unit;
+    using retType = void;
 
     std::size_t size;
     const char *text;
@@ -157,7 +135,7 @@ struct StringLiteral : Expression {
             text(text), size(size) { }
 
     template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
+    void operator()(ParserState<Iterator> &state) const {
         if(state.end() - state.cursor() < this->size) {
             state.reportFailure();
         } else {
@@ -171,38 +149,36 @@ struct StringLiteral : Expression {
                 ++state.cursor();
             }
         }
-        return unit();
     }
 };
 
 
 struct Char : Expression {
-    using retType = unit;
+    using retType = void;
 
     char ch;
 
     constexpr Char(char ch) : ch(ch) { }
 
     template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
+    void operator()(ParserState<Iterator> &state) const {
         if(state.cursor() != state.end() && *state.cursor() == this->ch) {
             ++state.cursor();
         } else {
             state.reportFailure();
         }
-        return unit();
     }
 };
 
 struct CharClass : Expression {
-    using retType = unit;
+    using retType = void;
 
     misc::AsciiMap asciiMap;
 
     constexpr explicit CharClass(misc::AsciiMap asciiMap) : asciiMap(asciiMap) { }
 
     template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
+    void operator()(ParserState<Iterator> &state) const {
         if(state.cursor() == state.end()) {
             state.reportFailure();
         } else if(!this->asciiMap.contains(*state.cursor())) {
@@ -210,28 +186,39 @@ struct CharClass : Expression {
         } else {
             ++state.cursor();
         }
-        return unit();
     }
 };
 
-template <typename T, typename D, size_t Low = 0, size_t High = static_cast<size_t>(-1)>
-struct Repeat : Expression {
+template <typename T>
+struct UnaryExpr : Expression {
     static_assert(is_expr<T>::value, "must be Expression");
-    static_assert(is_expr<D>::value, "must be Expression");
-    static_assert(misc::is_unit<typename D::retType>::value, "must be unit expression");
-    static_assert(Low < High, "invalid interval");
-
-    using exprType = typename T::retType;
-    using retType = misc::unaryRetTypeHelper<exprType, std::vector<exprType>>;
 
     T expr;
+
+    constexpr explicit UnaryExpr(T expr) : expr(expr) { }
+};
+
+template <typename T, typename D, size_t Low, size_t High>
+struct RepeatBase : UnaryExpr<T> {
+    static_assert(is_expr<D>::value, "must be Expression");
+    static_assert(std::is_void<typename D::retType>::value, "must be void type");
+    static_assert(Low < High, "invalid interval");
+
     D delim;
 
-    constexpr Repeat(T expr, D delim) : expr(expr), delim(delim) { }
+    constexpr RepeatBase(T expr, D delim) : UnaryExpr<T>(expr), delim(delim) { }
+};
 
-    template <typename Iterator, typename P = exprType,
-            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
-    unit operator()(ParserState<Iterator> &state) const {
+template <typename T, typename D, size_t Low, size_t High>
+struct RepeatVoid : RepeatBase<T, D, Low, High> {
+    static_assert(std::is_void<typename T::retType>::value, "must be void type");
+
+    using retType = void;
+
+    constexpr RepeatVoid(T expr, D delim) : RepeatBase<T, D, Low, High>(expr, delim) { }
+
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
         size_t index = 0;
         for(; index < High; index++) {
             // match delimiter
@@ -252,11 +239,21 @@ struct Repeat : Expression {
         if(index >= Low) {
             state.setResult(true);
         }
-        return unit();
     }
+};
 
-    template <typename Iterator, typename P = exprType,
-            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
+
+template <typename T, typename D, size_t Low, size_t High>
+struct Repeat : RepeatBase<T, D, Low, High> {
+    using exprType = typename T::retType;
+
+    static_assert(!std::is_void<exprType>::value, "must not be void type");
+
+    using retType = std::vector<exprType>;
+
+    constexpr Repeat(T expr, D delim) : RepeatBase<T, D, Low, High>(expr, delim) { }
+
+    template <typename Iterator>
     std::vector<exprType> operator()(ParserState<Iterator> &state) const {
         std::vector<exprType> value;
 
@@ -286,29 +283,45 @@ struct Repeat : Expression {
     }
 };
 
+template <size_t Low, size_t High, typename T, typename D,
+        misc::enable_when<is_expr<T>::value && std::is_void<typename T::retType>::value> = misc::enabler>
+constexpr RepeatVoid<T, D, Low, High> repeatHelper(T expr, D delim) {
+    return RepeatVoid<T, D, Low, High>(expr, delim);
+}
+
+template <size_t Low, size_t High, typename T, typename D,
+        misc::enable_when<is_expr<T>::value && !std::is_void<typename T::retType>::value> = misc::enabler>
+constexpr Repeat<T, D, Low, High> repeatHelper(T expr, D delim) {
+    return Repeat<T, D, Low, High>(expr, delim);
+}
+
 template <typename T>
-struct Option : Expression {
-    static_assert(is_expr<T>::value, "must be Expression");
+struct OptionVoid : UnaryExpr<T> {
+    static_assert(std::is_void<typename T::retType>::value, "must be void type");
 
-    using exprType = typename T::retType;
-    using retType = misc::unaryRetTypeHelper<exprType, Optional<exprType>>;
+    using retType = void;
 
-    T expr;
+    constexpr explicit OptionVoid(T expr) : UnaryExpr<T>(expr) { }
 
-    constexpr explicit Option(T expr) : expr(expr) { }
-
-    template <typename Iterator, typename P = exprType,
-            misc::enable_when<misc::is_unit<P>::value> = misc::enabler>
-    unit operator()(ParserState<Iterator> &state) const {
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
         this->expr(state);
         if(!state.result()) {
             state.setResult(true);
         }
-        return unit();
     }
+};
 
-    template <typename Iterator, typename P = exprType,
-            misc::enable_when<!misc::is_unit<P>::value> = misc::enabler>
+template <typename T>
+struct Option : UnaryExpr<T> {
+    using exprType = typename T::retType;
+    static_assert(!std::is_void<exprType>::value, "must not be void type");
+
+    using retType = Optional<exprType>;
+
+    constexpr explicit Option(T expr) : UnaryExpr<T>(expr) { }
+
+    template <typename Iterator>
     Optional<exprType> operator()(ParserState<Iterator> &state) const {
         Optional<exprType> value;
         auto v = this->expr(state);
@@ -321,22 +334,30 @@ struct Option : Expression {
     }
 };
 
-template <typename T>
-struct NotPredicate : Expression {
-    static_assert(is_expr<T>::value, "must be Expression");
+template <typename T,
+        misc::enable_when<is_expr<T>::value && std::is_void<typename T::retType>::value> = misc::enabler>
+constexpr OptionVoid<T> optionHelper(T expr) {
+    return OptionVoid<T>(expr);
+}
 
+template <typename T,
+        misc::enable_when<is_expr<T>::value && !std::is_void<typename T::retType>::value> = misc::enabler>
+constexpr Option<T> optionHelper(T expr) {
+    return Option<T>(expr);
+}
+
+template <typename T>
+struct NotPredicate : UnaryExpr<T> {
     using exprType = typename T::retType;
 
-    static_assert(misc::is_unit<exprType>::value, "must be unit type");
+    static_assert(std::is_void<exprType>::value, "must be void type");
 
-    using retType = unit;
+    using retType = void;
 
-    T expr;
-
-    constexpr explicit NotPredicate(T expr) : expr(expr) { }
+    constexpr explicit NotPredicate(T expr) : UnaryExpr<T>(expr) { }
 
     template <typename Iterator>
-    unit operator()(ParserState<Iterator> &state) const {
+    void operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
         this->expr(state);
         if(state.result()) {
@@ -345,7 +366,6 @@ struct NotPredicate : Expression {
         } else {
             state.setResult(true);
         }
-        return unit();
     }
 };
 
@@ -356,7 +376,7 @@ struct Capture : Expression {
     using exprType = typename T::retType;
     using retType = std::string;
 
-    static_assert(misc::is_unit<exprType>::value, "must be unit type");
+    static_assert(std::is_void<exprType>::value, "must be void type");
 
     T expr;
 
@@ -383,23 +403,28 @@ struct CaptureHolder {
     }
 };
 
+
 template <typename L, typename R>
-struct Sequence : Expression {
+struct BinaryExpr : Expression {
     static_assert(is_expr<L>::value && is_expr<R>::value, "must be Expression");
-
-    using leftType = typename L::retType;
-    using rightType = typename R::retType;
-
-    using retType = misc::seqRetTypeHelper<leftType, rightType>;
 
     L left;
     R right;
 
-    constexpr Sequence(L left, R right) : left(left), right(right) { }
+    constexpr BinaryExpr(L left, R right) : left(left), right(right) { }
+};
 
-    template <typename Iterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<misc::is_unit<LT>::value && misc::is_unit<RT>::value> = misc::enabler>
-    unit operator()(ParserState<Iterator> &state) const {
+template <typename L, typename R>
+struct SequenceVoid : BinaryExpr<L, R> {
+    static_assert(std::is_void<typename L::retType>::value
+                  && std::is_void<typename R::retType>::value, "left and right epxression must be void type");
+
+    using retType = void;
+
+    constexpr SequenceVoid(L left, R right) : BinaryExpr<L, R>(left, right) { }
+
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
         this->left(state);
         if(state.result()) {
@@ -408,13 +433,20 @@ struct Sequence : Expression {
                 state.cursor() = old;
             }
         }
-        return unit();
     }
+};
 
-    // return left value
-    template <typename Iterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<misc::is_unit<RT>::value && !misc::is_unit<LT>::value> = misc::enabler>
-    leftType operator()(ParserState<Iterator> &state) const {
+template <typename L, typename R>
+struct SequenceRightVoid : BinaryExpr<L, R> {
+    static_assert(!std::is_void<typename L::retType>::value
+                  && std::is_void<typename R::retType>::value, "right epxression must be void type");
+
+    using retType = typename L::retType;
+
+    constexpr SequenceRightVoid(L left, R right) : BinaryExpr<L, R>(left, right) { }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
         auto v = this->left(state);
         if(state.result()) {
@@ -425,13 +457,21 @@ struct Sequence : Expression {
         }
         return std::move(v);
     }
+};
 
-    // return right value
-    template <typename Iterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
-    rightType operator()(ParserState<Iterator> &state) const {
+template <typename L, typename R>
+struct SequenceLeftVoid : BinaryExpr<L, R> {
+    static_assert(std::is_void<typename L::retType>::value
+                  && !std::is_void<typename R::retType>::value, "left epxression must be void type");
+
+    using retType = typename R::retType;
+
+    constexpr SequenceLeftVoid(L left, R right) : BinaryExpr<L, R>(left, right) { }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &state) const {
         auto old = state.cursor();
-        rightType v;
+        retType v;
         this->left(state);
         if(state.result()) {
             v = this->right(state);
@@ -441,9 +481,21 @@ struct Sequence : Expression {
         }
         return std::move(v);
     }
+};
 
-    template <typename Iterator, typename LT = leftType, typename RT = rightType,
-            misc::enable_when<!misc::is_unit<LT>::value && !misc::is_unit<RT>::value> = misc::enabler>
+template <typename L, typename R>
+struct Sequence : BinaryExpr<L, R> {
+    static_assert(!std::is_void<typename L::retType>::value
+                  && !std::is_void<typename R::retType>::value, "left and right epxression must not be void type");
+
+    using leftType = typename L::retType;
+    using rightType = typename R::retType;
+
+    using retType = decltype(misc::catAsTuple(leftType(), rightType()));
+
+    constexpr Sequence(L left, R right) : BinaryExpr<L, R>(left, right) { }
+
+    template <typename Iterator>
     retType operator()(ParserState<Iterator> &state) const {
         leftType v1;
         rightType v2;
@@ -459,10 +511,62 @@ struct Sequence : Expression {
     }
 };
 
-template <typename L, typename R>
-struct Choice : Expression {
-    static_assert(is_expr<L>::value && is_expr<R>::value, "must be Expression");
+template <typename L, typename R,
+        misc::enable_when<is_expr<L>::value && is_expr<R>::value
+                          && std::is_void<typename L::retType>::value
+                          && std::is_void<typename R::retType>::value> = misc::enabler>
+constexpr SequenceVoid<L, R> seqHelper(L left, R right) {
+    return SequenceVoid<L, R>(left, right);
+};
 
+template <typename L, typename R,
+        misc::enable_when<is_expr<L>::value && is_expr<R>::value
+                          && !std::is_void<typename L::retType>::value
+                          && std::is_void<typename R::retType>::value> = misc::enabler>
+constexpr SequenceRightVoid<L, R> seqHelper(L left, R right) {
+    return SequenceRightVoid<L, R>(left, right);
+};
+
+template <typename L, typename R,
+        misc::enable_when<is_expr<L>::value && is_expr<R>::value
+                          && std::is_void<typename L::retType>::value
+                          && !std::is_void<typename R::retType>::value> = misc::enabler>
+constexpr SequenceLeftVoid<L, R> seqHelper(L left, R right) {
+    return SequenceLeftVoid<L, R>(left, right);
+};
+
+template <typename L, typename R,
+        misc::enable_when<is_expr<L>::value && is_expr<R>::value
+                          && !std::is_void<typename L::retType>::value
+                          && !std::is_void<typename R::retType>::value> = misc::enabler>
+constexpr Sequence<L, R> seqHelper(L left, R right) {
+    return Sequence<L, R>(left, right);
+};
+
+
+template <typename L, typename R>
+struct ChoiceVoid : BinaryExpr<L, R> {
+    using leftType = typename L::retType;
+    using rightType = typename R::retType;
+
+    static_assert(std::is_void<leftType>::value && std::is_void<rightType>::value, "must be void type");
+
+    using retType = void;
+
+    constexpr ChoiceVoid(L left, R right) : BinaryExpr<L, R>(left, right) { }
+
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
+        this->left(state);
+        if(!state.result()) {
+            state.setResult(true);
+            this->right(state);
+        }
+    }
+};
+
+template <typename L, typename R>
+struct Choice : BinaryExpr<L, R> {
     using leftType = typename L::retType;
     using rightType = typename R::retType;
 
@@ -470,10 +574,7 @@ struct Choice : Expression {
 
     using retType = leftType;
 
-    L left;
-    R right;
-
-    constexpr Choice(L left, R right) : left(left), right(right) { }
+    constexpr Choice(L left, R right) : BinaryExpr<L, R>(left, right) { }
 
     template <typename Iterator>
     retType operator()(ParserState<Iterator> &state) const {
@@ -486,16 +587,40 @@ struct Choice : Expression {
     }
 };
 
+template <typename L, typename R,
+        misc::enable_when<is_expr<L>::value && is_expr<R>::value
+                          && std::is_void<typename L::retType>::value
+                          && std::is_void<typename R::retType>::value> = misc::enabler>
+constexpr ChoiceVoid<L, R> choiceHelper(L left, R right) {
+    return ChoiceVoid<L, R>(left, right);
+}
+
+template <typename L, typename R,
+        misc::enable_when<is_expr<L>::value && is_expr<R>::value
+                          && !std::is_void<typename L::retType>::value
+                          && !std::is_void<typename R::retType>::value> = misc::enabler>
+constexpr Choice<L, R> choiceHelper(L left, R right) {
+    return Choice<L, R>(left, right);
+}
+
 template <typename T>
 struct NonTerminal : Expression {
     using retType = misc::param_type_of_t<T>;
 
     constexpr NonTerminal() {}
 
-    template <typename Iterator>
+    template <typename Iterator, typename P = retType,
+            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
     retType operator()(ParserState<Iterator> &state) const {
         constexpr auto p = T::pattern();
         return p(state);
+    }
+
+    template <typename Iterator, typename P = retType,
+            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+    void operator()(ParserState<Iterator> &state) const {
+        constexpr auto p = T::pattern();
+        p(state);
     }
 };
 
@@ -519,7 +644,19 @@ struct MapperAdapter : Expression {
 
     constexpr MapperAdapter(T expr, M mapper) : expr(expr), mapper(mapper) { }
 
-    template <typename Iterator>
+    template <typename Iterator, typename P = typename T::retType,
+            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+    retType operator()(ParserState<Iterator> &state) const {
+        this->expr(state);
+        retType r;
+        if(state.result()) {
+            r = this->mapper(state);
+        }
+        return std::move(r);
+    }
+
+    template <typename Iterator, typename P = typename T::retType,
+            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
     retType operator()(ParserState<Iterator> &state) const {
         auto v = this->expr(state);
         retType r;

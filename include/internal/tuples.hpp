@@ -91,7 +91,7 @@ inline auto unpackAndApply(A &&arg) -> decltype(Func()(std::forward<A>(arg))) {
 }
 
 template <typename Func>
-inline auto unpackAndApply(unit &&arg) -> decltype(Func()()) {
+inline auto unpackAndApply() -> decltype(Func()()) {
     return Func()();
 }
 
@@ -136,7 +136,7 @@ inline T unpackAndConstruct(A &&arg) {
 }
 
 template <typename T, bool useSmartPtr = false>
-inline T unpackAndConstruct(unit &&arg) {
+inline T unpackAndConstruct() {
     return construct<T, useSmartPtr>();
 }
 

@@ -20,13 +20,7 @@
 #include <type_traits>
 
 namespace aquarius {
-
-struct unit {}; // for representing empty value
-
 namespace misc {
-
-template <typename T>
-struct is_unit : std::is_same<T, unit> { };
 
 /**
  * type helper

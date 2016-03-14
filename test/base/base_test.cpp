@@ -7,7 +7,7 @@
 
 template <typename P>
 constexpr bool check_unit(P) {
-    static_assert(aquarius::misc::is_unit<typename P::retType>::value, "must be unit type");
+    static_assert(std::is_void<typename P::retType>::value, "must be void type");
     return true;
 }
 
@@ -836,13 +836,13 @@ namespace top {
 
 using namespace aquarius;
 
-AQUARIUS_DECL_RULE(unit, S);
+AQUARIUS_DECL_RULE(void, S);
 
-AQUARIUS_DEFINE_RULE(unit, SPACE, *nterm<S>::v);
+AQUARIUS_DEFINE_RULE(void, SPACE, *nterm<S>::v);
 
-AQUARIUS_DEFINE_RULE(unit, S, set(' ', '\t', '\n', '\r'));
+AQUARIUS_DEFINE_RULE(void, S, set(' ', '\t', '\n', '\r'));
 
-AQUARIUS_DEFINE_RULE(unit, Rep, 'b'_ch | 'a'_ch >> nterm<Rep>::v);
+AQUARIUS_DEFINE_RULE(void, Rep, 'b'_ch | 'a'_ch >> nterm<Rep>::v);
 
 }
 
@@ -853,7 +853,7 @@ TEST(base, nterm1) {
     std::string line("  \t \n ");
     auto state = createState(line.begin(), line.end());
 
-    auto r = SPACE::pattern()(state);
+    SPACE::pattern()(state);
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(6, state.cursor() - state.begin()));
 

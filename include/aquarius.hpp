@@ -50,8 +50,8 @@ constexpr expression::Any ANY;
 constexpr expression::CaptureHolder text;
 
 template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T, typename D>
-constexpr expression::Repeat<T, D, Low, High> repeat(T expr, D delim) {
-    return expression::Repeat<T, D, Low, High>(expr, delim);
+constexpr auto repeat(T expr, D delim) -> decltype(expression::repeatHelper<Low, High>(expr, delim)) {
+    return expression::repeatHelper<Low, High>(expr, delim);
 }
 
 template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T>
@@ -70,8 +70,8 @@ constexpr auto operator+(T expr) -> decltype(repeat<1>(expr)) {
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
-constexpr expression::Option<T> operator-(T expr) {
-    return expression::Option<T>(expr);
+constexpr auto operator-(T expr) -> decltype(expression::optionHelper(expr)) {
+    return expression::optionHelper(expr);
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
@@ -86,14 +86,14 @@ constexpr auto operator&(T expr) -> decltype(!(!expr)) {
 
 template <typename L, typename R,
         misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
-constexpr expression::Sequence<L, R> operator>>(L left, R right) {
-    return expression::Sequence<L, R>(left, right);
+constexpr auto operator>>(L left, R right) -> decltype(expression::seqHelper(left, right)) {
+    return expression::seqHelper(left, right);
 }
 
 template <typename L, typename R,
         misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
-constexpr expression::Choice<L, R> operator|(L left, R right) {
-    return expression::Choice<L, R>(left, right);
+constexpr auto operator|(L left, R right) -> decltype(expression::choiceHelper(left, right)) {
+    return expression::choiceHelper(left, right);
 }
 
 template <typename T>
@@ -191,11 +191,43 @@ public:
     }
 };
 
+template <>
+class ParsedResult<void> {
+private:
+    bool success;
+
+public:
+    ParsedResult() : success(false) { }
+
+    explicit ParsedResult(bool success) : success(success) { }
+
+    ~ParsedResult() = default;
+
+    explicit operator bool() const {
+        return this->success;
+    }
+};
+
 template <typename RULE>
 struct Parser {
     using retType = typename decltype(nterm<RULE>::v)::retType;
 
-    template <typename RandomAccessIterator>
+    template <typename RandomAccessIterator, typename P = retType,
+            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+    ParsedResult<void> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
+        constexpr auto p = RULE::pattern();
+
+        ParsedResult<void> r;
+        auto state = createState(begin, end);
+        p(state);
+        if(state.result()) {
+            r = ParsedResult<void>(true);
+        }
+        return std::move(r);
+    }
+
+    template <typename RandomAccessIterator, typename P = retType,
+            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
         constexpr auto p = RULE::pattern();
 
