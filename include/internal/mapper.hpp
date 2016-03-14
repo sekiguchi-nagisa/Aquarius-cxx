@@ -92,20 +92,21 @@ struct Joiner : JoinerBase<Functor, T> {
     }
 };
 
-template <typename Functor, typename T, typename D>
-struct EachJoiner0 : JoinerBase<Functor, T> {
+template <typename Functor, typename T, typename D, size_t Low = 0, size_t High = static_cast<size_t>(-1)>
+struct EachJoiner : JoinerBase<Functor, T> {
     static_assert(expression::is_expr<D>::value &&
                           misc::is_unit<typename D::retType>::value, "must be unit type expression");
 
     D delim;
 
-    constexpr EachJoiner0(T expr, D delim) : JoinerBase<Functor, T>(expr), delim(delim) { }
+    constexpr EachJoiner(T expr, D delim) : JoinerBase<Functor, T>(expr), delim(delim) { }
 
     template <typename Iterator, typename Value>
     typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
-        for(size_t index = 0; ; index++) {
+        size_t index = 0;
+        for(; index < High; index++) {
             // match delimiter
-            if(index > 0) {
+            if(!std::is_same<D, expression::Empty>::value && index > 0) {
                 this->delim(state);
                 if(!state.result()) {
                     break;
@@ -121,7 +122,9 @@ struct EachJoiner0 : JoinerBase<Functor, T> {
             Functor()(v, std::move(r));
         }
 
-        state.setResult(true);
+        if(index >= Low) {
+            state.setResult(true);
+        }
         return std::move(v);
     }
 };

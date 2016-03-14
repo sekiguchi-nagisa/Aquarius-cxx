@@ -133,14 +133,24 @@ constexpr mapper::Joiner<F, T> join(T expr) {
     return mapper::Joiner<F, T>(expr);
 }
 
+template <typename F, size_t Low = 0, size_t High = static_cast<size_t >(-1), typename T, typename D>
+constexpr mapper::EachJoiner<F, T, D, Low, High> join_each(T expr, D delim) {
+    return mapper::EachJoiner<F, T, D, Low, High>(expr, delim);
+}
+
+template <typename F, size_t Low = 0, size_t High = static_cast<size_t >(-1), typename T>
+constexpr auto join_each(T expr) -> decltype(join_each<F, Low, High>(expr, expression::Empty())) {
+    return join_each<F, Low, High>(expr, expression::Empty());
+}
+
 template <typename F, typename T, typename D>
-constexpr mapper::EachJoiner0<F, T, D> join_each0(T expr, D delim) {
-    return mapper::EachJoiner0<F, T, D>(expr, delim);
+constexpr auto join_each0(T expr, D delim) -> decltype(join_each<F>(expr, delim)) {
+    return join_each<F>(expr, delim);
 }
 
 template <typename F, typename T>
-constexpr mapper::EachJoiner0<F, T, expression::Empty> join_each0(T expr) {
-    return mapper::EachJoiner0<F, T, expression::Empty>(expr, expression::Empty());
+constexpr auto join_each0(T expr) -> decltype(join_each0<F>(expr, expression::Empty())) {
+    return join_each0<F>(expr, expression::Empty());
 }
 
 
