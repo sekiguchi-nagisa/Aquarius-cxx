@@ -44,6 +44,7 @@ constexpr misc::AsciiMap r(char start, char stop) {
     return misc::makeFromRange(start, stop);
 }
 
+constexpr expression::Empty EMPTY;
 constexpr expression::Any ANY;
 
 constexpr expression::CaptureHolder text;
@@ -54,19 +55,19 @@ constexpr expression::Repeat<T, D, Low, High> repeat(T expr, D delim) {
 }
 
 template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T>
-constexpr expression::Repeat<T, expression::Empty, Low, High> repeat(T expr) {
-    return expression::Repeat<T, expression::Empty, Low, High>(expr, expression::Empty());
+constexpr auto repeat(T expr) -> decltype(repeat<Low, High>(expr, expression::Empty())) {
+    return repeat<Low, High>(expr, expression::Empty());
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr auto operator*(T expr) -> decltype(repeat(expr)) {
     return repeat(expr);
-};
+}
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr auto operator+(T expr) -> decltype(repeat<1>(expr)) {
     return repeat<1>(expr);
-};
+}
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
 constexpr expression::Option<T> operator-(T expr) {
@@ -87,13 +88,13 @@ template <typename L, typename R,
         misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
 constexpr expression::Sequence<L, R> operator>>(L left, R right) {
     return expression::Sequence<L, R>(left, right);
-};
+}
 
 template <typename L, typename R,
         misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
 constexpr expression::Choice<L, R> operator|(L left, R right) {
     return expression::Choice<L, R>(left, right);
-};
+}
 
 template <typename T>
 struct nterm {
@@ -130,17 +131,17 @@ constexpr mapper::Supplier<T> supply(T t) {
 template <typename F, typename T>
 constexpr mapper::Joiner<F, T> join(T expr) {
     return mapper::Joiner<F, T>(expr);
-};
+}
 
 template <typename F, typename T, typename D>
 constexpr mapper::EachJoiner0<F, T, D> join_each0(T expr, D delim) {
     return mapper::EachJoiner0<F, T, D>(expr, delim);
-};
+}
 
 template <typename F, typename T>
 constexpr mapper::EachJoiner0<F, T, expression::Empty> join_each0(T expr) {
     return mapper::EachJoiner0<F, T, expression::Empty>(expr, expression::Empty());
-};
+}
 
 
 template <typename T>

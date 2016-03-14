@@ -123,6 +123,8 @@ struct is_expr : std::is_base_of<Expression, T> { };
 struct Empty : Expression {
     using retType = unit;
 
+    constexpr Empty() { }
+
     template <typename Iterator>
     unit operator()(ParserState<Iterator> &state) const {
         return unit();
