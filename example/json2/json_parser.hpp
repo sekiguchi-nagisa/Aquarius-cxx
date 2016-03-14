@@ -31,18 +31,6 @@ struct ToNumber {
     }
 };
 
-struct ToTrue {
-    std::unique_ptr<JSONBool> operator()() const {
-        return make_unique<JSONBool>(true);
-    }
-};
-
-struct ToFalse {
-    std::unique_ptr<JSONBool> operator()() const {
-        return make_unique<JSONBool>(false);
-    }
-};
-
 struct AppendToObject {
     void operator()(std::unique_ptr<JSONObject> &json,
                     std::tuple<std::unique_ptr<JSONString>, std::unique_ptr<JSON>> &&t) const {
@@ -93,8 +81,8 @@ AQUARIUS_DEFINE_RULE(
          | number
          | nterm<object>::v
          | nterm<array>::v
-         | "true"_str >> map<ToTrue>()
-         | "false"_str >> map<ToFalse>()
+         | "true"_str >> supply(true) >> cons_unique<JSONBool>()
+         | "false"_str >> supply(false) >> cons_unique<JSONBool>()
          | "null"_str >> cons_unique<JSONNull>()
         ) >> space
 );

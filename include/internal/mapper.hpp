@@ -33,14 +33,29 @@ struct CommonMapper : expression::Mapper {
     }
 };
 
-template <typename T>
+template <typename T, bool useSmartPtr = false>
 struct Constructor : expression::Mapper {
     using retType = T;
     static_assert(!std::is_void<retType>::value, "must not be void");
 
     template <typename Iterator, typename Value>
     retType operator()(ParserState<Iterator> &state, Value &&v) const {
-        return misc::unpackAndConstruct<T>(std::move(v));
+        return misc::unpackAndConstruct<T, useSmartPtr>(std::move(v));
+    }
+};
+
+template <typename T>
+struct Supplier : expression::Mapper {
+    using retType = T;
+    static_assert(!std::is_void<retType>::value, "must not be void");
+
+    T constant;
+
+    constexpr Supplier(T constant) : constant(constant) { }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &, unit &&) const {
+        return this->constant;
     }
 };
 

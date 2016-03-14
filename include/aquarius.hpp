@@ -108,8 +108,13 @@ constexpr mapper::Constructor<T> construct() {
 }
 
 template <typename T>
-constexpr mapper::Constructor<std::unique_ptr<T>> cons_unique() {
-    return mapper::Constructor<std::unique_ptr<T>>();
+constexpr mapper::Constructor<std::unique_ptr<T>, true> cons_unique() {
+    return mapper::Constructor<std::unique_ptr<T>, true>();
+}
+
+template <typename T>
+constexpr mapper::Supplier<T> supply(T t) {
+    return mapper::Supplier<T>(t);
 }
 
 template <typename F, typename T>

@@ -700,6 +700,20 @@ TEST(base, constructor) {
     auto state = createState(input.begin(), input.end());
     auto r = p(state);
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r.empty()));
+}
+
+TEST(base, supply) {
+    using namespace aquarius;
+
+    constexpr auto p = ANY >> supply(true);
+    check_same<bool>(p);
+
+    std::string input("4");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r));
 }
 
 
