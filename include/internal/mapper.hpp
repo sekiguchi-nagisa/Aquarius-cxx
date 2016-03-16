@@ -73,11 +73,26 @@ template <typename T>
 struct NullSupplier : expression::Mapper {
     using retType = std::unique_ptr<T>;
 
-    constexpr NullSupplier() { }
-
     template <typename Iterator>
     retType operator()(ParserState<Iterator> &) const {
         return std::unique_ptr<T>();
+    }
+};
+
+template <typename T>
+struct Cast : expression::Mapper {
+    using retType = std::unique_ptr<T>;
+
+    template <typename Iterator, typename U>
+    retType operator()(ParserState<Iterator> &state, std::unique_ptr<U> &&value) const {
+        static_assert(std::is_base_of<T, U>::value || std::is_base_of<U, T>::value, "must be base type of derived type");
+        if(std::is_base_of<U, T>::value) {
+            if(dynamic_cast<T *>(value.get()) == nullptr) {
+                state.setResult(false);
+                return std::unique_ptr<T>();
+            }
+        }
+        return std::unique_ptr<T>(static_cast<T *>(value.release()));
     }
 };
 

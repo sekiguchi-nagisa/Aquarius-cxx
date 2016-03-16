@@ -44,12 +44,6 @@ struct AppendToArray {
     }
 };
 
-struct JSONUpCast {
-    std::unique_ptr<JSON> operator()(std::unique_ptr<JSON> &&value) const {
-        return std::move(value);
-    }
-};
-
 
 using namespace aquarius;
 
@@ -77,7 +71,7 @@ AQUARIUS_DECL_RULE(std::unique_ptr<JSONArray>, array);
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSON>, value,
-        (string >> map<JSONUpCast>()
+        (string >> cast<JSON>()
          | number
          | nterm<object>::v
          | nterm<array>::v
@@ -103,7 +97,7 @@ AQUARIUS_DEFINE_RULE(
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSON>, json,
-        space >> (nterm<object>::v >> map<JSONUpCast>() | nterm<array>::v)
+        space >> (nterm<object>::v >> cast<JSON>() | nterm<array>::v)
 );
 
 } // namespace json

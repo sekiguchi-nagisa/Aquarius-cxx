@@ -128,6 +128,11 @@ constexpr mapper::NullSupplier<T> supplyNull() {
     return mapper::NullSupplier<T>();
 }
 
+template <typename T>
+constexpr mapper::Cast<T> cast() {
+    return mapper::Cast<T>();
+}
+
 template <typename F, typename T>
 constexpr mapper::Joiner<F, T> join(T expr) {
     return mapper::Joiner<F, T>(expr);
