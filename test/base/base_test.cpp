@@ -782,6 +782,19 @@ TEST(base, supply) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r));
 }
 
+TEST(base, supplyNull) {
+    using namespace aquarius;
+
+    constexpr auto p = ANY >> supplyNull<int>();
+    check_same<std::unique_ptr<int>>(p);
+
+    std::string input("4");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r.get() == nullptr));
+}
+
 
 struct StrJoiner {
     void operator()(std::string &str, std::string &&v) const {

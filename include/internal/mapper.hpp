@@ -38,19 +38,19 @@ struct CommonMapper : expression::Mapper {
     }
 };
 
-template <typename T, bool useSmartPtr = false>
+template <typename T>
 struct Constructor : expression::Mapper {
-    using retType = T;
+    using retType = misc::type_of_constructor_t<T>;
     static_assert(!std::is_void<retType>::value, "must not be void");
 
     template <typename Iterator, typename Value>
     retType operator()(ParserState<Iterator> &state, Value &&v) const {
-        return misc::unpackAndConstruct<T, useSmartPtr>(std::move(v));
+        return misc::unpackAndConstruct<T>(std::move(v));
     }
 
     template <typename Iterator>
     retType operator()(ParserState<Iterator> &state) const {
-        return misc::unpackAndConstruct<T, useSmartPtr>();
+        return misc::unpackAndConstruct<T>();
     }
 };
 
@@ -61,11 +61,23 @@ struct Supplier : expression::Mapper {
 
     T constant;
 
-    constexpr Supplier(T constant) : constant(constant) { }
+    constexpr explicit Supplier(T constant) : constant(constant) { }
 
     template <typename Iterator>
     retType operator()(ParserState<Iterator> &) const {
         return this->constant;
+    }
+};
+
+template <typename T>
+struct NullSupplier : expression::Mapper {
+    using retType = std::unique_ptr<T>;
+
+    constexpr NullSupplier() { }
+
+    template <typename Iterator>
+    retType operator()(ParserState<Iterator> &) const {
+        return std::unique_ptr<T>();
     }
 };
 

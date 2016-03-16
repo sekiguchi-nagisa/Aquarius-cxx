@@ -65,7 +65,7 @@ constexpr auto kvSep = space >> ':'_ch >> space;
 constexpr auto vSep = ','_ch >> space;
 
 constexpr auto escape = '\\'_ch >> set('"', '\\', '/', 'b', 'f', 'n', 'r', 't');
-constexpr auto string = text[ '"'_ch >> *(escape | !set('"', '\\') >> ANY) >> '"'_ch ] >> cons_unique<JSONString>();
+constexpr auto string = text[ '"'_ch >> *(escape | !set('"', '\\') >> ANY) >> '"'_ch ] >> construct<JSONString *>();
 
 constexpr auto integer = '0'_ch | set(r('1', '9')) >> *set(r('0', '9'));
 constexpr auto exp = set('E', 'e') >> -set('+', '-') >> integer;
@@ -81,9 +81,9 @@ AQUARIUS_DEFINE_RULE(
          | number
          | nterm<object>::v
          | nterm<array>::v
-         | "true"_str >> supply(true) >> cons_unique<JSONBool>()
-         | "false"_str >> supply(false) >> cons_unique<JSONBool>()
-         | "null"_str >> cons_unique<JSONNull>()
+         | "true"_str >> supply(true) >> construct<JSONBool *>()
+         | "false"_str >> supply(false) >> construct<JSONBool *>()
+         | "null"_str >> construct<JSONNull *>()
         ) >> space
 );
 
@@ -91,13 +91,13 @@ constexpr auto keyValue = string >> kvSep >> nterm<value>::v >> space;
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSONArray>, array,
-        arrayOpen >> cons_unique<JSONArray>() >>
+        arrayOpen >> construct<JSONArray *>() >>
                 join_each0<AppendToArray>(nterm<value>::v, vSep) >> arrayClose
 );
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSONObject>, object,
-        objectOpen >> cons_unique<JSONObject>() >>
+        objectOpen >> construct<JSONObject *>() >>
                 join_each0<AppendToObject>(keyValue, vSep) >> objectClose
 );
 

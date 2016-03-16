@@ -114,7 +114,7 @@ struct Hoge {
 };
 
 TEST(tuple, construct2) {
-    auto r = misc::unpackAndConstruct<std::unique_ptr<Hoge>, true>(std::make_tuple(10));
+    auto r = misc::unpackAndConstruct<Hoge *>(std::make_tuple(10));
     static_assert(std::is_same<std::unique_ptr<Hoge>, decltype(r)>::value, "must be same type");
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(10, r->v));
 }

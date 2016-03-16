@@ -98,46 +98,59 @@ inline auto unpackAndApply() -> decltype(Func()()) {
 /**
  * construct object with tuple argument.
  */
-template <typename T, bool useSmartPtr, typename ... Arg,
-        enable_when<!useSmartPtr || !is_specialization_of<T, std::unique_ptr>::value> = enabler>
+template <typename T>
+struct type_of_constructor {
+    using type = T;
+};
+
+template <typename T>
+struct type_of_constructor<T *> {
+    using type = std::unique_ptr<T>;
+};
+
+template <typename T>
+using type_of_constructor_t = typename type_of_constructor<T>::type;
+
+template <typename T, typename ... Arg,
+        misc::enable_when<!std::is_pointer<T>::value> = misc::enabler>
 inline T construct(Arg && ...arg) {
     return T(std::forward<Arg>(arg)...);
 }
 
-template <typename T, bool useSmartPtr, typename ... Arg,
-        enable_when<useSmartPtr && is_specialization_of<T, std::unique_ptr>::value> = enabler>
-inline T construct(Arg && ...arg) {
-    using P = param_type_of_t<T>;
-    return T(new P(std::forward<Arg>(arg)...));
+template <typename T, typename ... Arg,
+        misc::enable_when<std::is_pointer<T>::value> = misc::enabler>
+inline auto construct(Arg && ...arg) -> std::unique_ptr<typename std::remove_pointer<T>::type> {
+    using P = typename std::remove_pointer<T>::type;
+    return std::unique_ptr<P>(new P(std::forward<Arg>(arg)...));
 }
 
-template <typename T, bool useSmartPtr, typename ... A, typename ... Arg,
+template <typename T, typename ... A, typename ... Arg,
         enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
-inline T unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
-    return construct<T, useSmartPtr>(std::forward<Arg>(arg)...);
+inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
+    return construct<T>(std::forward<Arg>(arg)...);
 }
 
-template <typename T, bool useSmartPtr, typename ... A, typename ... Arg,
+template <typename T, typename ... A, typename ... Arg,
         enable_when<(sizeof...(A) > sizeof...(Arg))> = enabler>
-inline T unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
-    return unpackAndConstructImpl<T, useSmartPtr>(
+inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
+    return unpackAndConstructImpl<T>(
             std::move(tuple), std::forward<Arg>(arg)..., std::move(std::get<sizeof...(Arg)>(tuple)));
 }
 
 
-template <typename T, bool useSmartPtr = false, typename ... A>
-inline T unpackAndConstruct(std::tuple<A ...> &&tuple) {
-    return unpackAndConstructImpl<T, useSmartPtr>(std::move(tuple));
+template <typename T, typename ... A>
+inline type_of_constructor_t<T> unpackAndConstruct(std::tuple<A ...> &&tuple) {
+    return unpackAndConstructImpl<T>(std::move(tuple));
 }
 
-template <typename T, bool useSmartPtr = false, typename A>
-inline T unpackAndConstruct(A &&arg) {
-    return construct<T, useSmartPtr>(std::forward<A>(arg));
+template <typename T, typename A>
+inline type_of_constructor_t<T> unpackAndConstruct(A &&arg) {
+    return construct<T>(std::forward<A>(arg));
 }
 
-template <typename T, bool useSmartPtr = false>
-inline T unpackAndConstruct() {
-    return construct<T, useSmartPtr>();
+template <typename T>
+inline type_of_constructor_t<T> unpackAndConstruct() {
+    return construct<T>();
 }
 
 
