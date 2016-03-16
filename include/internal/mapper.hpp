@@ -28,12 +28,12 @@ struct CommonMapper : expression::Mapper {
     static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
 
     template <typename Iterator, typename Value>
-    retType operator()(ParserState<Iterator> &state, Value &&v) const {
+    retType operator()(ParserState<Iterator> &, Value &&v) const {
         return misc::unpackAndApply<Functor>(std::move(v));
     }
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &state) const {
+    retType operator()(ParserState<Iterator> &) const {
         return misc::unpackAndApply<Functor>();
     }
 };
@@ -44,12 +44,12 @@ struct Constructor : expression::Mapper {
     static_assert(!std::is_void<retType>::value, "must not be void");
 
     template <typename Iterator, typename Value>
-    retType operator()(ParserState<Iterator> &state, Value &&v) const {
+    retType operator()(ParserState<Iterator> &, Value &&v) const {
         return misc::unpackAndConstruct<T>(std::move(v));
     }
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &state) const {
+    retType operator()(ParserState<Iterator> &) const {
         return misc::unpackAndConstruct<T>();
     }
 };

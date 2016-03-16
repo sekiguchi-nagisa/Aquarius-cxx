@@ -107,7 +107,7 @@ struct Empty : Expression {
     constexpr Empty() { }
 
     template <typename Iterator>
-    void operator()(ParserState<Iterator> &state) const { }
+    void operator()(ParserState<Iterator> &) const { }
 };
 
 struct Any : Expression {
@@ -132,11 +132,11 @@ struct StringLiteral : Expression {
     const char *text;
 
     constexpr explicit StringLiteral(const char *text, std::size_t size) :
-            text(text), size(size) { }
+            size(size), text(text) { }
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {
-        if(state.end() - state.cursor() < this->size) {
+        if(state.cursor() + this->size > state.end()) {
             state.reportFailure();
         } else {
             auto old = state.cursor();

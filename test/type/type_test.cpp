@@ -20,7 +20,7 @@ TEST(type, case1) {
 }
 
 struct Func1 {
-    void operator()(int i) {
+    void operator()(int) {
         return;
     }
 };

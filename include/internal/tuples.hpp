@@ -68,7 +68,7 @@ inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), st
  */
 template <typename Func, typename ... A, typename ... Arg,
         enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
-inline auto unpackAndApplyImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(Func()(A() ...)) {
+inline auto unpackAndApplyImpl(std::tuple<A ...> &&, Arg&& ...arg) -> decltype(Func()(A() ...)) {
     return Func()(std::forward<Arg>(arg)...);
 }
 
@@ -126,7 +126,7 @@ inline auto construct(Arg && ...arg) -> std::unique_ptr<typename std::remove_poi
 
 template <typename T, typename ... A, typename ... Arg,
         enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
-inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
+inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&, Arg&& ...arg) {
     return construct<T>(std::forward<Arg>(arg)...);
 }
 
