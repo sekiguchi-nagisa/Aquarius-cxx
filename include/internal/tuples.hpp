@@ -153,7 +153,6 @@ inline type_of_constructor_t<T> unpackAndConstruct() {
     return construct<T>();
 }
 
-
 } // namespace misc
 } // namespace aquarius
 
