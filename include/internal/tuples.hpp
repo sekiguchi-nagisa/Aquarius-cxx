@@ -64,25 +64,41 @@ inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), st
 }
 
 /**
+ * for tuple unpacking
+ */
+namespace __detail_unpacker {
+
+template <size_t ... S>
+struct tuple_unpacker { };
+
+template <size_t N, size_t ... S>
+struct tuple_unpacker_holder : tuple_unpacker_holder<N - 1, N - 1, S...> { };
+
+template <size_t ... N>
+struct tuple_unpacker_holder<0, N...> {
+    using type = tuple_unpacker<N...>;
+};
+
+} // namespace __detail_unpacker
+
+template <size_t ... N>
+using tuple_unpacker = __detail_unpacker::tuple_unpacker<N...>;
+
+template <size_t N>
+using create_unpacker = typename __detail_unpacker::tuple_unpacker_holder<N>::type;
+
+
+/**
  * apply function object with tuple argument.
  */
-template <typename Func, typename ... A, typename ... Arg,
-        enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
-inline auto unpackAndApplyImpl(std::tuple<A ...> &&, Arg&& ...arg) -> decltype(Func()(A() ...)) {
-    return Func()(std::forward<Arg>(arg)...);
+template <typename Func, typename ... A, size_t ... I>
+inline auto unpackAndApplyImpl(std::tuple<A ...> &&tuple, tuple_unpacker<I ...>) -> decltype(Func()(A() ...)) {
+    return Func()(std::get<I>(std::move(tuple))...);
 }
-
-template <typename Func, typename ... A, typename ... Arg,
-        enable_when<(sizeof...(A) > sizeof...(Arg))> = enabler>
-inline auto unpackAndApplyImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) -> decltype(Func()(A() ...)) {
-    return unpackAndApplyImpl<Func>(std::move(tuple),
-                              std::forward<Arg>(arg)..., std::move(std::get<sizeof...(Arg)>(tuple)));
-}
-
 
 template <typename Func, typename ... A>
 inline auto unpackAndApply(std::tuple<A ...> &&tuple) -> decltype(Func()(A() ...)) {
-    return unpackAndApplyImpl<Func>(std::move(tuple));
+    return unpackAndApplyImpl<Func>(std::move(tuple), create_unpacker<sizeof...(A)>());
 }
 
 template <typename Func, typename A>
@@ -124,23 +140,14 @@ inline auto construct(Arg && ...arg) -> std::unique_ptr<typename std::remove_poi
     return std::unique_ptr<P>(new P(std::forward<Arg>(arg)...));
 }
 
-template <typename T, typename ... A, typename ... Arg,
-        enable_when<(sizeof...(A) == sizeof...(Arg))> = enabler>
-inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&, Arg&& ...arg) {
-    return construct<T>(std::forward<Arg>(arg)...);
+template <typename T, typename ... A, size_t ... I>
+inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&tuple, tuple_unpacker<I...>) {
+    return construct<T>(std::get<I>(std::move(tuple))...);
 }
-
-template <typename T, typename ... A, typename ... Arg,
-        enable_when<(sizeof...(A) > sizeof...(Arg))> = enabler>
-inline type_of_constructor_t<T> unpackAndConstructImpl(std::tuple<A ...> &&tuple, Arg&& ...arg) {
-    return unpackAndConstructImpl<T>(
-            std::move(tuple), std::forward<Arg>(arg)..., std::move(std::get<sizeof...(Arg)>(tuple)));
-}
-
 
 template <typename T, typename ... A>
 inline type_of_constructor_t<T> unpackAndConstruct(std::tuple<A ...> &&tuple) {
-    return unpackAndConstructImpl<T>(std::move(tuple));
+    return unpackAndConstructImpl<T>(std::move(tuple), create_unpacker<sizeof...(A)>());
 }
 
 template <typename T, typename A>
