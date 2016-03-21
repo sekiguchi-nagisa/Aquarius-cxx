@@ -51,6 +51,10 @@ public:
         return this->cursor_;
     }
 
+    size_t consumedSize() const {
+        return std::distance(this->begin_, this->cursor_);
+    }
+
     void reportFailure() {
         this->result_ = false;
     }
