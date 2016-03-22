@@ -26,74 +26,9 @@
 #include "state.hpp"
 #include "misc.hpp"
 #include "tuples.hpp"
+#include "ascii.hpp"
 
 namespace aquarius {
-
-namespace misc {
-
-// ascii map
-constexpr std::uint64_t setBit(std::uint64_t bitmap, char ch) {
-    return ch >= 0 && ch < 64 ? bitmap | (1L << ch) : throw std::logic_error("");
-}
-
-struct AsciiMap {
-    std::uint64_t map[2];
-
-    constexpr AsciiMap() : map{0, 0} { }
-
-    constexpr AsciiMap(std::uint64_t upper, std::uint64_t lower) : map{upper, lower} { }
-
-    constexpr AsciiMap operator+(AsciiMap asciiMap) const {
-        return AsciiMap(this->map[0] | asciiMap.map[0], this->map[1] | asciiMap.map[1]);
-    }
-
-    constexpr AsciiMap operator+(char ch) const {
-        return ch >= 0 && ch < 64 ? AsciiMap(setBit(this->map[0], ch), this->map[1]) :
-               ch >= 64 ? AsciiMap(this->map[0], setBit(this->map[1], ch - 64)) :
-               throw std::logic_error("must be ascii character");
-    }
-
-    bool contains(char ch) const {
-        if(ch < 0) {
-            return false;
-        }
-        if(ch < 64) {
-            return this->map[0] & (1L << ch);
-        }
-        return this->map[1] & (1L << (ch - 64));
-    }
-};
-
-constexpr AsciiMap update(AsciiMap asciiMap) {
-    return asciiMap;
-}
-
-template <typename ... T>
-constexpr AsciiMap update(AsciiMap asciiMap, AsciiMap other, T ... rest) {
-    return update(asciiMap + other, rest...);
-}
-
-template <typename ... T>
-constexpr AsciiMap update(AsciiMap asciiMap, char ch, T ... rest) {
-    return update(asciiMap + ch, rest...);
-}
-
-template <typename ... T>
-constexpr AsciiMap makeAsciiMap(T ... rest) {
-    return update(AsciiMap(), rest...);
-}
-
-constexpr AsciiMap makeFromRange(AsciiMap asciiMap, char start, char stop) {
-    return start < stop ? makeFromRange(asciiMap + start, start + 1, stop) : asciiMap + start;
-}
-
-constexpr AsciiMap makeFromRange(char start, char stop) {
-    return start < stop ? makeFromRange(AsciiMap(), start, stop)
-                        : throw std::logic_error("start is less than stop");
-}
-
-} // namespace misc
-
 namespace expression {
 
 struct Expression { };
@@ -173,9 +108,9 @@ struct Char : Expression {
 struct CharClass : Expression {
     using retType = void;
 
-    misc::AsciiMap asciiMap;
+    ascii::AsciiMap asciiMap;
 
-    constexpr explicit CharClass(misc::AsciiMap asciiMap) : asciiMap(asciiMap) { }
+    constexpr explicit CharClass(ascii::AsciiMap asciiMap) : asciiMap(asciiMap) { }
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {

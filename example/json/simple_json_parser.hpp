@@ -23,7 +23,7 @@ namespace json {
 
 using namespace aquarius;
 
-constexpr auto space = *set(' ', '\t', '\r', '\n');
+constexpr auto space = *" \t\r\n"_set;
 
 constexpr auto objectOpen = '{'_ch >> space;
 constexpr auto objectClose = '}'_ch >> space;
@@ -34,12 +34,12 @@ constexpr auto arrayClose = ']'_ch >> space;
 constexpr auto kvSep = space >> ':'_ch >> space;
 constexpr auto vSep = ','_ch >> space;
 
-constexpr auto escape = '\\'_ch >> set('"', '\\', '/', 'b', 'f', 'n', 'r', 't');
-constexpr auto string = '"'_ch >> *(escape | !set('"', '\\') >> ANY) >> '"'_ch;
+constexpr auto escape = '\\'_ch >> "\"\\/bfnrt"_set;
+constexpr auto string = '"'_ch >> *(escape | !"\"\\"_set >> ANY) >> '"'_ch;
 
-constexpr auto integer = '0'_ch | set(r('1', '9')) >> *set(r('0', '9'));
-constexpr auto exp = set('E', 'e') >> -set('+', '-') >> integer;
-constexpr auto number = -'-'_ch >> integer >> '.'_ch >> +(set(r('0', '9'))) >> -exp
+constexpr auto integer = '0'_ch | "1-9"_set >> *"0-9"_set;
+constexpr auto exp = "eE"_set >> -"+-"_set >> integer;
+constexpr auto number = -'-'_ch >> integer >> '.'_ch >> +"0-9"_set >> -exp
                         | -'-'_ch >> integer;
 
 AQUARIUS_DECL_RULE(void, object);

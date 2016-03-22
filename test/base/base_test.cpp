@@ -154,7 +154,7 @@ TEST(base, charClass1) {
 TEST(base, charClass2) {
     using namespace aquarius;
 
-    constexpr auto p = set('a', '1', 'C');
+    constexpr auto p = "a1C"_set;
     check_unit(p);
 
     std::string input("1Ca");
@@ -198,7 +198,7 @@ TEST(base, charClass2) {
 TEST(base, charClass3) {
     using namespace aquarius;
 
-    constexpr auto p = set(r('0', '9'), '_', r('a', 'z'));
+    constexpr auto p = "0-9_a-z"_set;
     check_unit(p);
 
     std::string input("10_aeh9op62qz8l");
@@ -315,7 +315,7 @@ TEST(base, capture) {
 TEST(base, zeroMore1) {
     using namespace aquarius;
 
-    constexpr auto p = *set(r('A', 'Z'));
+    constexpr auto p = *"A-Z"_set;
     check_unit(p);
 
     std::string input("ABCDEFGH");
@@ -371,7 +371,7 @@ TEST(base, zeroMore2) {
 TEST(base, oneMore1) {
     using namespace aquarius;
 
-    constexpr auto p = +set(r('A', 'Z'));
+    constexpr auto p = +"A-Z"_set;
     check_unit(p);
 
     std::string input("ABCDEFGH");
@@ -853,7 +853,7 @@ AQUARIUS_DECL_RULE(void, S);
 
 AQUARIUS_DEFINE_RULE(void, SPACE, *nterm<S>::v);
 
-AQUARIUS_DEFINE_RULE(void, S, set(' ', '\t', '\n', '\r'));
+AQUARIUS_DEFINE_RULE(void, S, " \t\n\r"_set);
 
 AQUARIUS_DEFINE_RULE(void, Rep, 'b'_ch | 'a'_ch >> nterm<Rep>::v);
 

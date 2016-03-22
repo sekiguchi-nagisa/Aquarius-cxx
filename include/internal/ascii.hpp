@@ -1,0 +1,81 @@
+/*
+ * Copyright (C) 2016 Nagisa Sekiguchi
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef AQUARIUS_CXX_INTERNAL_ASCII_HPP
+#define AQUARIUS_CXX_INTERNAL_ASCII_HPP
+
+namespace aquarius {
+namespace ascii {
+
+// ascii map
+constexpr std::uint64_t setBit(std::uint64_t bitmap, char ch) {
+    return ch >= 0 && ch < 64 ? bitmap | (1L << ch) : throw std::logic_error("");
+}
+
+struct AsciiMap {
+    std::uint64_t map[2];
+
+    constexpr AsciiMap() : map{0, 0} { }
+
+    constexpr AsciiMap(std::uint64_t upper, std::uint64_t lower) : map{upper, lower} { }
+
+    constexpr AsciiMap operator+(AsciiMap asciiMap) const {
+        return AsciiMap(this->map[0] | asciiMap.map[0], this->map[1] | asciiMap.map[1]);
+    }
+
+    constexpr AsciiMap operator+(char ch) const {
+        return ch >= 0 && ch < 64 ? AsciiMap(setBit(this->map[0], ch), this->map[1]) :
+               ch >= 64 ? AsciiMap(this->map[0], setBit(this->map[1], ch - 64)) :
+               throw std::logic_error("must be ascii character");
+    }
+
+    bool contains(char ch) const {
+        if(ch < 0) {
+            return false;
+        }
+        if(ch < 64) {
+            return this->map[0] & (1L << ch);
+        }
+        return this->map[1] & (1L << (ch - 64));
+    }
+};
+
+constexpr AsciiMap makeFromRange(AsciiMap asciiMap, char start, char stop) {
+    return start < stop ? makeFromRange(asciiMap + start, start + 1, stop) : asciiMap + start;
+}
+
+constexpr AsciiMap makeFromRange(char start, char stop) {
+    return start < stop ? makeFromRange(AsciiMap(), start, stop)
+                        : throw std::logic_error("start is less than stop");
+}
+
+constexpr AsciiMap convertToAsciiMap(const char *str, size_t index, char prev, AsciiMap map) {
+    return str[index] == '\0' ? map :
+           str[index] == '\\' && str[index + 1] == '-' ? convertToAsciiMap(str, index + 2, '-', map + '-') :
+           str[index] == '-' && prev != '\0' && str[index + 1] != '\0' ?
+            convertToAsciiMap(str, index + 2, str[index + 1], makeFromRange(map, prev, str[index + 1])) :
+           convertToAsciiMap(str, index + 1, str[index], map + str[index]);
+}
+
+constexpr AsciiMap convertToAsciiMap(const char *str) {
+    return convertToAsciiMap(str, 0, 0, AsciiMap());
+}
+
+
+} // namespace ascii
+} // namespace aquarius
+
+#endif //AQUARIUS_CXX_INTERNAL_ASCII_HPP
