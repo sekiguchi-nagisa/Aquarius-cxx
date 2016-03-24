@@ -57,21 +57,16 @@ constexpr AsciiMap makeFromRange(AsciiMap asciiMap, char start, char stop) {
     return start < stop ? makeFromRange(asciiMap + start, start + 1, stop) : asciiMap + start;
 }
 
-constexpr AsciiMap makeFromRange(char start, char stop) {
-    return start < stop ? makeFromRange(AsciiMap(), start, stop)
-                        : throw std::logic_error("start is less than stop");
+constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index, AsciiMap map) {
+    return index == size - 1 ? map :
+           str[index] == '\\' && index + 1 < size && str[index + 1] == '-' ? convertToAsciiMap(str, size, index + 2, map + '-') :
+           index > 0 && str[index] == '-' && index + 1 < size && str[index - 1] < str[index + 1] ?
+                convertToAsciiMap(str, size, index + 2, makeFromRange(map, str[index - 1], str[index + 1])) :
+           convertToAsciiMap(str, size, index + 1, map + str[index]);
 }
 
-constexpr AsciiMap convertToAsciiMap(const char *str, size_t index, char prev, AsciiMap map) {
-    return str[index] == '\0' ? map :
-           str[index] == '\\' && str[index + 1] == '-' ? convertToAsciiMap(str, index + 2, '-', map + '-') :
-           str[index] == '-' && prev != '\0' && str[index + 1] != '\0' ?
-            convertToAsciiMap(str, index + 2, str[index + 1], makeFromRange(map, prev, str[index + 1])) :
-           convertToAsciiMap(str, index + 1, str[index], map + str[index]);
-}
-
-constexpr AsciiMap convertToAsciiMap(const char *str) {
-    return convertToAsciiMap(str, 0, 0, AsciiMap());
+constexpr AsciiMap convertToAsciiMap(const char *str, size_t size) {
+    return convertToAsciiMap(str, size, 0, AsciiMap());
 }
 
 

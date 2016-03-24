@@ -25,6 +25,12 @@ static AsciiMap createMap(char (&bits)[N]) {
     return AsciiMap(low, high);
 }
 
+template <size_t N>
+static constexpr AsciiMap convertToAsciiMap(const char (&str)[N]) {
+    return convertToAsciiMap(str, N);
+}
+
+
 TEST(AsciiTest, base) {
     char set[] = {'a', 'b'};
     AsciiMap map = createMap(set);
@@ -103,6 +109,28 @@ TEST(AsciiTest, parse7) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
 }
+
+TEST(AsciiTest, parse8) {
+    char set[] = {'a', 'c', '-', '\\'};
+    auto expect = createMap(set);
+
+    constexpr auto map = convertToAsciiMap("\\c-a");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
+}
+
+
+TEST(AsciiTest, parse9) {
+    char set[] = {'a', 'c', '\0'};
+    auto expect = createMap(set);
+
+    constexpr auto map = convertToAsciiMap("a\0c");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
+}
+
 
 
 int main(int argc, char **argv) {

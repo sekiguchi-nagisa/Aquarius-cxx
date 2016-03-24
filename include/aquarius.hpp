@@ -30,8 +30,8 @@ constexpr expression::Char operator ""_ch(char ch) {
     return ch >= 0 ? expression::Char(ch) : throw std::logic_error("must be ascii character");
 }
 
-constexpr expression::CharClass operator ""_set(const char *text, std::size_t) {
-    return expression::CharClass(ascii::convertToAsciiMap(text));
+constexpr expression::CharClass operator ""_set(const char *text, std::size_t size) {
+    return expression::CharClass(ascii::convertToAsciiMap(text, size + 1));
 }
 
 constexpr expression::Empty EMPTY;
