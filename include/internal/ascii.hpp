@@ -42,6 +42,10 @@ struct AsciiMap {
                throw std::logic_error("must be ascii character");
     }
 
+    constexpr AsciiMap operator~() const {
+        return AsciiMap(~this->map[0], ~this->map[1]);
+    }
+
     bool contains(char ch) const {
         if(ch < 0) {
             return false;
@@ -57,11 +61,31 @@ constexpr AsciiMap makeFromRange(AsciiMap asciiMap, char start, char stop) {
     return start < stop ? makeFromRange(asciiMap + start, start + 1, stop) : asciiMap + start;
 }
 
+constexpr bool checkCharRange(char start, char stop) {
+    return start <= stop ? true : throw std::invalid_argument("start character must be stop character or less");
+}
+
 constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index, AsciiMap map) {
-    return index == size - 1 ? map :
-           str[index] == '\\' && index + 1 < size && str[index + 1] == '-' ? convertToAsciiMap(str, size, index + 2, map + '-') :
-           index > 0 && str[index] == '-' && index + 1 < size && str[index - 1] < str[index + 1] ?
+            // negate ascii map
+    return index == 0 && str[0] == '^' ? ~convertToAsciiMap(str, size, index + 1, map) :
+
+           // terminal
+           index == size - 1 ? map :
+
+           // escape '^'
+           str[index] == '\\' && index + 1 < size - 1 && str[index + 1] == '^' ?
+                convertToAsciiMap(str, size, index + 2, map + '^') :
+
+           // escape '-'
+           str[index] == '\\' && index + 1 < size - 1 && str[index + 1] == '-' ?
+                convertToAsciiMap(str, size, index + 2, map + '-') :
+
+           // parse character range
+           index > 0 && str[index - 1] != '^' && str[index] == '-' && index + 1 < size - 1
+           && checkCharRange(str[index - 1], str[index + 1]) ?
                 convertToAsciiMap(str, size, index + 2, makeFromRange(map, str[index - 1], str[index + 1])) :
+
+           // update ascii map (default case)
            convertToAsciiMap(str, size, index + 1, map + str[index]);
 }
 

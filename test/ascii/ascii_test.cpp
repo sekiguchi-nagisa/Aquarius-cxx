@@ -111,17 +111,6 @@ TEST(AsciiTest, parse7) {
 }
 
 TEST(AsciiTest, parse8) {
-    char set[] = {'a', 'c', '-', '\\'};
-    auto expect = createMap(set);
-
-    constexpr auto map = convertToAsciiMap("\\c-a");
-
-    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
-    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
-}
-
-
-TEST(AsciiTest, parse9) {
     char set[] = {'a', 'c', '\0'};
     auto expect = createMap(set);
 
@@ -131,7 +120,77 @@ TEST(AsciiTest, parse9) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
 }
 
+TEST(AsciiTest, parse9) {
+    constexpr auto map = convertToAsciiMap("^");
 
+    for(unsigned int i = 0; i < 128; i++) {
+        ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(map.contains(static_cast<char>(i))));
+    }
+}
+
+TEST(AsciiTest, parse10) {
+    constexpr auto map = convertToAsciiMap("^-");
+
+    for(unsigned int i = 0; i < 128; i++) {
+        if(i == '-') {
+            ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(map.contains(static_cast<char>(i))));
+        } else {
+            ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(map.contains(static_cast<char>(i))));
+        }
+    }
+}
+
+TEST(AsciiTest, parse11) {
+    constexpr auto map = convertToAsciiMap("^ab");
+
+    for(unsigned int i = 0; i < 128; i++) {
+        if(i == 'a' || i == 'b') {
+            ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(map.contains(static_cast<char>(i))));
+        } else {
+            ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(map.contains(static_cast<char>(i))));
+        }
+    }
+}
+
+TEST(AsciiTest, parse12) {
+    char set[] = {'a', 'c', '^'};
+    auto expect = createMap(set);
+
+    constexpr auto map = convertToAsciiMap("a^c");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
+}
+
+TEST(AsciiTest, parse13) {
+    char set[] = {'a', 'c', '^'};
+    auto expect = createMap(set);
+
+    constexpr auto map = convertToAsciiMap("ac^");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
+}
+
+TEST(AsciiTest, parse14) {
+    char set[] = {'a', 'c', '^'};
+    auto expect = createMap(set);
+
+    constexpr auto map = convertToAsciiMap("\\^ac");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
+}
+
+TEST(AsciiTest, parse15) {
+    char set[] = {'^'};
+    auto expect = createMap(set);
+
+    constexpr auto map = convertToAsciiMap("\\^");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
