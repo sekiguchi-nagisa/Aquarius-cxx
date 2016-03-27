@@ -27,7 +27,7 @@ static AsciiMap createMap(char (&bits)[N]) {
 
 template <size_t N>
 static constexpr AsciiMap convertToAsciiMap(const char (&str)[N]) {
-    return convertToAsciiMap(str, N);
+    return convertToAsciiMap(str, N - 1);
 }
 
 

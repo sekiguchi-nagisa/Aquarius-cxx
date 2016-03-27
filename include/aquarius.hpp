@@ -31,7 +31,7 @@ constexpr expression::Char operator ""_ch(char ch) {
 }
 
 constexpr expression::CharClass operator ""_set(const char *text, std::size_t size) {
-    return expression::CharClass(ascii::convertToAsciiMap(text, size + 1));
+    return expression::CharClass(ascii::convertToAsciiMap(text, size));
 }
 
 constexpr expression::Empty EMPTY;

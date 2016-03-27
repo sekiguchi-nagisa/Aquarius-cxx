@@ -70,18 +70,18 @@ constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index,
     return index == 0 && str[0] == '^' ? ~convertToAsciiMap(str, size, index + 1, map) :
 
            // terminal
-           index == size - 1 ? map :
+           index == size ? map :
 
            // escape '^'
-           str[index] == '\\' && index + 1 < size - 1 && str[index + 1] == '^' ?
+           str[index] == '\\' && index + 1 < size && str[index + 1] == '^' ?
                 convertToAsciiMap(str, size, index + 2, map + '^') :
 
            // escape '-'
-           str[index] == '\\' && index + 1 < size - 1 && str[index + 1] == '-' ?
+           str[index] == '\\' && index + 1 < size && str[index + 1] == '-' ?
                 convertToAsciiMap(str, size, index + 2, map + '-') :
 
            // parse character range
-           index > 0 && str[index - 1] != '^' && str[index] == '-' && index + 1 < size - 1
+           index > 0 && str[index - 1] != '^' && str[index] == '-' && index + 1 < size
            && checkCharRange(str[index - 1], str[index + 1]) ?
                 convertToAsciiMap(str, size, index + 2, makeFromRange(map, str[index - 1], str[index + 1])) :
 
