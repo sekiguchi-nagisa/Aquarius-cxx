@@ -47,26 +47,26 @@ AQUARIUS_DECL_RULE(void, array);
 
 AQUARIUS_DEFINE_RULE(
         void, value,
-        (string | number | nterm<object>::v | nterm<array>::v | "true"_str | "false"_str | "null"_str) >> space
+        (string | number | nterm<object>() | nterm<array>() | "true"_str | "false"_str | "null"_str) >> space
 );
 
 AQUARIUS_DEFINE_RULE(
         void, keyValue,
-        string >> kvSep >> nterm<value>::v >> space
+        string >> kvSep >> nterm<value>() >> space
 );
 
 AQUARIUS_DEFINE_RULE(
         void, array,
-        arrayOpen >> -(nterm<value>::v >> *(vSep >> nterm<value>::v)) >> arrayClose
+        arrayOpen >> -(nterm<value>() >> *(vSep >> nterm<value>())) >> arrayClose
 );
 
 AQUARIUS_DEFINE_RULE(
         void, object,
-        objectOpen >> -(nterm<keyValue>::v >> *(vSep >> nterm<keyValue>::v)) >> objectClose
+        objectOpen >> -(nterm<keyValue>() >> *(vSep >> nterm<keyValue>())) >> objectClose
 );
 
 AQUARIUS_DEFINE_RULE(void, json,
-                     space >> (nterm<object>::v | nterm<array>::v)
+                     space >> (nterm<object>() | nterm<array>())
 );
 
 } // namespace json

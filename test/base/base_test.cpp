@@ -756,6 +756,24 @@ TEST(base, mapper) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
 }
 
+#if (__cplusplus >= 201402L)
+
+TEST(base, mapper2) {
+    using namespace aquarius;
+
+    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] >> map_c<Sum>;
+    check_same<int>(p);
+
+    std::string input("12+18");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(5u, state.consumedSize()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
+}
+
+#endif
+
 TEST(base, constructor) {
     using namespace aquarius;
 
@@ -768,6 +786,23 @@ TEST(base, constructor) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r.empty()));
 }
+
+#if (__cplusplus >= 201402L)
+
+TEST(base, constructor2) {
+    using namespace aquarius;
+
+    constexpr auto p = ANY >> cons_c<std::string>;
+    check_same<std::string>(p);
+
+    std::string input("3");
+    auto state = createState(input.begin(), input.end());
+    auto r = p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r.empty()));
+}
+
+#endif
 
 TEST(base, supply) {
     using namespace aquarius;
@@ -851,11 +886,11 @@ using namespace aquarius;
 
 AQUARIUS_DECL_RULE(void, S);
 
-AQUARIUS_DEFINE_RULE(void, SPACE, *nterm<S>::v);
+AQUARIUS_DEFINE_RULE(void, SPACE, *nterm<S>());
 
 AQUARIUS_DEFINE_RULE(void, S, " \t\n\r"_set);
 
-AQUARIUS_DEFINE_RULE(void, Rep, 'b'_ch | 'a'_ch >> nterm<Rep>::v);
+AQUARIUS_DEFINE_RULE(void, Rep, 'b'_ch | 'a'_ch >> nterm<Rep>());
 
 }
 

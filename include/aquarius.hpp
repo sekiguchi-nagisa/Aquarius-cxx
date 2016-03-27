@@ -87,9 +87,9 @@ constexpr auto operator|(L left, R right) -> decltype(expression::choiceHelper(l
 }
 
 template <typename T>
-struct nterm {
-    static constexpr auto v = expression::NonTerminal<T>();
-};
+constexpr expression::NonTerminal<T> nterm() {
+    return expression::NonTerminal<T>();
+}
 
 template <typename T, typename M,
         misc::enable_when<expression::is_expr<T>::value &&
@@ -148,6 +148,22 @@ constexpr auto join_each0(T expr) -> decltype(join_each0<F>(expr, expression::Em
     return join_each0<F>(expr, expression::Empty());
 }
 
+// define C++14 specific operator
+#if (__cplusplus >= 201402L)
+
+template <typename T>
+constexpr auto nterm_c = expression::NonTerminal<T>();
+
+template <typename T>
+constexpr auto map_c = mapper::CommonMapper<T>();
+
+template <typename T>
+constexpr auto cons_c = mapper::Constructor<T>();
+
+template <typename T>
+constexpr auto cast_c = mapper::Cast<T>();
+
+#endif
 
 template <typename T>
 class ParsedResult {
@@ -205,7 +221,7 @@ public:
 
 template <typename RULE>
 struct Parser {
-    using retType = typename decltype(nterm<RULE>::v)::retType;
+    using retType = typename decltype(nterm<RULE>())::retType;
 
     template <typename RandomAccessIterator, typename P = retType,
             misc::enable_when<std::is_void<P>::value> = misc::enabler>

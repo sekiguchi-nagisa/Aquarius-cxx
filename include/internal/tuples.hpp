@@ -63,6 +63,17 @@ inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), st
     return std::tuple_cat(std::move(l), std::move(r));
 }
 
+
+#if (__cplusplus >= 201402L)
+
+template <size_t ... N>
+using tuple_unpacker = std::index_sequence<N...>;
+
+template <size_t N>
+using create_unpacker = typename std::make_index_sequence<N>;
+
+#else
+
 /**
  * for tuple unpacking
  */
@@ -86,6 +97,8 @@ using tuple_unpacker = __detail_unpacker::tuple_unpacker<N...>;
 
 template <size_t N>
 using create_unpacker = typename __detail_unpacker::tuple_unpacker_holder<N>::type;
+
+#endif
 
 
 /**

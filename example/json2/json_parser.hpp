@@ -73,20 +73,20 @@ AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSON>, value,
         (string >> cast<JSON>()
          | number
-         | nterm<object>::v
-         | nterm<array>::v
+         | nterm<object>()
+         | nterm<array>()
          | "true"_str >> supply(true) >> construct<JSONBool *>()
          | "false"_str >> supply(false) >> construct<JSONBool *>()
          | "null"_str >> construct<JSONNull *>()
         ) >> space
 );
 
-constexpr auto keyValue = string >> kvSep >> nterm<value>::v >> space;
+constexpr auto keyValue = string >> kvSep >> nterm<value>() >> space;
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSONArray>, array,
         arrayOpen >> construct<JSONArray *>() >>
-                join_each0<AppendToArray>(nterm<value>::v, vSep) >> arrayClose
+                join_each0<AppendToArray>(nterm<value>(), vSep) >> arrayClose
 );
 
 AQUARIUS_DEFINE_RULE(
@@ -97,7 +97,7 @@ AQUARIUS_DEFINE_RULE(
 
 AQUARIUS_DEFINE_RULE(
         std::unique_ptr<JSON>, json,
-        space >> (nterm<object>::v >> cast<JSON>() | nterm<array>::v)
+        space >> (nterm<object>() >> cast<JSON>() | nterm<array>())
 );
 
 } // namespace json

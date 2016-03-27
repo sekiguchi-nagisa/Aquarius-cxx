@@ -1,2 +1,2 @@
 # Aquarius-cxx
-a compile time parser generator for C++11
+a compile time parser generator for C++11/14

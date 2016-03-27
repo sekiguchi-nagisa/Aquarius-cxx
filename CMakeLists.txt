@@ -2,7 +2,19 @@ cmake_minimum_required(VERSION 2.7)
 
 project(Aquarius-cxx)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
+#+++++++++++++++++++++++++++++#
+#     set compiler option     #
+#+++++++++++++++++++++++++++++#
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+option(USE_CXX14 "use C++14" OFF)
+
+if (USE_CXX14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
+
 
 include_directories(include)
 
@@ -20,13 +32,6 @@ message("")
 message("+++++ List of System Configuration +++++")
 message(STATUS "CMAKE_BUILD_TYPE                 = ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_SYSTEM                     = ${CMAKE_SYSTEM}")
-message(STATUS "CMAKE_C_COMPILER_ID              = ${CMAKE_C_COMPILER_ID}")
-message(STATUS "CMAKE_C_COMPILER_VERSION         = ${CMAKE_C_COMPILER_VERSION}")
-message(STATUS "CMAKE_C_COMPILER                 = ${CMAKE_C_COMPILER}")
-message(STATUS "CMAKE_C_FLAGS                    = ${CMAKE_C_FLAGS}")
-message(STATUS "CMAKE_C_FLAGS_DEBUG              = ${CMAKE_C_FLAGS_DEBUG}")
-message(STATUS "CMAKE_C_FLAGS_RELEASE            = ${CMAKE_C_FLAGS_RELEASE}")
-message(STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO     = ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 message(STATUS "CMAKE_CXX_COMPILER_ID            = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION       = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_CXX_COMPILER               = ${CMAKE_CXX_COMPILER}")
