@@ -123,7 +123,7 @@ struct Joiner : JoinerBase<Functor, T> {
     typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
         auto r = this->expr(state);
         if(state.result()) {
-            Functor()(v, std::move(r));
+            misc::unpackAndAppend<Functor>(v, std::move(r));
         }
         return std::move(v);
     }
@@ -156,7 +156,7 @@ struct EachJoiner : JoinerBase<Functor, T> {
                 break;
             }
 
-            Functor()(v, std::move(r));
+            misc::unpackAndAppend<Functor>(v, std::move(r));
         }
 
         if(index >= Low) {

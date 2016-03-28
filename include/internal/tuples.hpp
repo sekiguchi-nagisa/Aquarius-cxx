@@ -102,7 +102,7 @@ using create_unpacker = typename __detail_unpacker::tuple_unpacker_holder<N>::ty
 
 
 /**
- * apply function object with tuple argument.
+ * apply function with tuple argument.
  */
 template <typename Func, typename ... A, size_t ... I>
 inline auto unpackAndApplyImpl(std::tuple<A ...> &&tuple, tuple_unpacker<I ...>) -> decltype(Func()(A() ...)) {
@@ -122,6 +122,24 @@ inline auto unpackAndApply(A &&arg) -> decltype(Func()(std::forward<A>(arg))) {
 template <typename Func>
 inline auto unpackAndApply() -> decltype(Func()()) {
     return Func()();
+}
+
+/**
+ * apply function with tuple argument.
+ */
+template <typename Func, typename T, typename ... A, size_t ... I>
+inline void unpackAndAppendImpl(T &recv, std::tuple<A ...> &&tuple, tuple_unpacker<I...>) {
+    Func()(recv, std::get<I>(std::move(tuple))...);
+}
+
+template <typename Func, typename T, typename ... A>
+inline void unpackAndAppend(T &recv, std::tuple<A ...> &&tuple) {
+    unpackAndAppendImpl<Func>(recv, std::move(tuple), create_unpacker<sizeof...(A)>());
+}
+
+template <typename Func, typename T, typename A>
+inline void unpackAndAppend(T &recv, A &&value) {
+    Func()(recv, std::forward<A>(value));
 }
 
 /**

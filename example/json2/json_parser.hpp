@@ -33,8 +33,8 @@ struct ToNumber {
 
 struct AppendToObject {
     void operator()(std::unique_ptr<JSONObject> &json,
-                    std::tuple<std::unique_ptr<JSONString>, std::unique_ptr<JSON>> &&t) const {
-        json->value().insert(std::make_pair(std::get<0>(std::move(t)), std::get<1>(std::move(t))));
+                    std::unique_ptr<JSONString> &&l, std::unique_ptr<JSON> &&r) const {
+        json->value().insert(std::make_pair(std::move(l), std::move(r)));
     }
 };
 
