@@ -21,6 +21,7 @@
 #include "internal/mapper.hpp"
 #include "internal/parser.hpp"
 #include "internal/combinator.hpp"
+#include "internal/predefined.hpp"
 
 // helper macro
 #define aquarius_pattern_t constexpr auto
