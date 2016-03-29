@@ -256,14 +256,13 @@ struct Parser {
 
 // helper macro
 
-#define AQUARIUS_ASSERT_PATTERN(P) \
-static_assert(std::is_same<T, decltype(P)::retType>::value, "must be same type")
+#define aquarius_pattern_t constexpr auto
 
 #define AQUARIUS_DEFINE_RULE(R, name, p) \
 template <typename T> \
 struct name ## __impl { \
     using name = name ## __impl<R>;\
-    AQUARIUS_ASSERT_PATTERN(p);\
+    static_assert(std::is_same<T, decltype(p)::retType>::value, "must be same type");\
     static constexpr auto pattern() -> decltype(p) { return p; }\
 }; using name = name ## __impl<R>
 

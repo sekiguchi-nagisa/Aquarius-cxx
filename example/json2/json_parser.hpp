@@ -63,7 +63,7 @@ constexpr auto string = text[ '"'_ch >> *(escape | !"\"\\"_set >> ANY) >> '"'_ch
 
 constexpr auto integer = '0'_ch | "1-9"_set >> *"0-9"_set;
 constexpr auto exp = "eE"_set >> -"+-"_set >> integer;
-constexpr auto number = text [ -'-'_ch >> integer >> '.'_ch >> +"0-9"_set >> -exp
+constexpr auto number = text[ -'-'_ch >> integer >> '.'_ch >> +"0-9"_set >> -exp
                                 | -'-'_ch >> integer ] >> map<ToNumber>();
 
 AQUARIUS_DECL_RULE(std::unique_ptr<JSONObject>, object);

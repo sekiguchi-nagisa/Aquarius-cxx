@@ -65,8 +65,9 @@ AQUARIUS_DEFINE_RULE(
         objectOpen >> -(nterm<keyValue>() >> *(vSep >> nterm<keyValue>())) >> objectClose
 );
 
-AQUARIUS_DEFINE_RULE(void, json,
-                     space >> (nterm<object>() | nterm<array>())
+AQUARIUS_DEFINE_RULE(
+        void, json,
+        space >> (nterm<object>() | nterm<array>())
 );
 
 } // namespace json
