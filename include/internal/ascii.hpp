@@ -18,7 +18,7 @@
 #define AQUARIUS_CXX_INTERNAL_ASCII_HPP
 
 namespace aquarius {
-namespace ascii {
+namespace ascii_map {
 
 // ascii map
 constexpr std::uint64_t setBit(std::uint64_t bitmap, char ch) {
@@ -94,7 +94,7 @@ constexpr AsciiMap convertToAsciiMap(const char *str, size_t size) {
 }
 
 
-} // namespace ascii
+} // namespace ascii_map
 } // namespace aquarius
 
 #endif //AQUARIUS_CXX_INTERNAL_ASCII_HPP

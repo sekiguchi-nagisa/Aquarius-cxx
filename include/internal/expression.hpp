@@ -108,9 +108,9 @@ struct Char : Expression {
 struct CharClass : Expression {
     using retType = void;
 
-    ascii::AsciiMap asciiMap;
+    ascii_map::AsciiMap asciiMap;
 
-    constexpr explicit CharClass(ascii::AsciiMap asciiMap) : asciiMap(asciiMap) { }
+    constexpr explicit CharClass(ascii_map::AsciiMap asciiMap) : asciiMap(asciiMap) { }
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {

@@ -4,7 +4,7 @@
 #include "internal/ascii.hpp"
 
 using namespace aquarius;
-using namespace ascii;
+using namespace ascii_map;
 
 template <size_t N>
 static AsciiMap createMap(char (&bits)[N]) {

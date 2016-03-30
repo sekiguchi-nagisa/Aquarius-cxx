@@ -20,6 +20,9 @@
 #include "expression.hpp"
 
 namespace aquarius {
+inline namespace ascii {
+
+constexpr expression::Any ANY;
 
 constexpr expression::StringLiteral operator "" _str(const char *text, std::size_t size) {
     return expression::StringLiteral(text, size);
@@ -30,11 +33,12 @@ constexpr expression::Char operator ""_ch(char ch) {
 }
 
 constexpr expression::CharClass operator ""_set(const char *text, std::size_t size) {
-    return expression::CharClass(ascii::convertToAsciiMap(text, size));
+    return expression::CharClass(ascii_map::convertToAsciiMap(text, size));
 }
 
+} // inline namespace ascii
+
 constexpr expression::Empty EMPTY;
-constexpr expression::Any ANY;
 
 constexpr expression::CaptureHolder text;
 
