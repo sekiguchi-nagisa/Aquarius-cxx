@@ -52,7 +52,7 @@ struct Any : Expression {
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {
-        if(state.cursor() == state.end()) {
+        if(state.cursor() == state.end() || *state.cursor() < 0) {
             state.reportFailure();
         } else {
             ++state.cursor();

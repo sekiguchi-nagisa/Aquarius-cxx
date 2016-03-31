@@ -32,7 +32,7 @@ TEST(base, any) {
         ASSERT_EQ(1u, state.consumedSize());
     });
 
-    // failed case
+    // failed case1
     input = "";
     state = createState(input.begin(), input.end());
 
@@ -41,6 +41,15 @@ TEST(base, any) {
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0u, state.consumedSize());
     });
+
+    // failed case2
+    char b[] = {-43, -45, -9, 0};
+    input = b;
+    state = createState(input.begin(), input.end());
+
+    ANY(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
 }
 
 TEST(base, string1) {
