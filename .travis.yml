@@ -1,0 +1,30 @@
+language: cpp
+
+sudo: required
+dist: trusty
+
+compiler:
+  - clang
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - cmake
+      - clang-3.4
+      - gcc-4.8
+      - g++-4.8
+
+install:
+ - cmake .. -DCMAKE_CXX_COMPILER=clang++
+ - make
+
+script:
+  - ctest --output-on-failure
+
+notifications:
+  emails:
+    - s.nagisa.xyz@gmail.com
+  on_success: change
+  on_failure: always
