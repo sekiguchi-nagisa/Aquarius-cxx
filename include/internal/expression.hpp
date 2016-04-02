@@ -265,7 +265,7 @@ struct Option : UnaryExpr<T> {
         } else {
             state.setResult(true);
         }
-        return std::move(value);
+        return value;
     }
 };
 
@@ -390,7 +390,7 @@ struct SequenceRightVoid : BinaryExpr<L, R> {
                 state.cursor() = old;
             }
         }
-        return std::move(v);
+        return v;
     }
 };
 
@@ -414,7 +414,7 @@ struct SequenceLeftVoid : BinaryExpr<L, R> {
                 state.cursor() = old;
             }
         }
-        return std::move(v);
+        return v;
     }
 };
 
@@ -518,7 +518,7 @@ struct Choice : BinaryExpr<L, R> {
             state.setResult(true);
             v = this->right(state);
         }
-        return std::move(v);
+        return v;
     }
 };
 
@@ -583,22 +583,22 @@ struct MapperAdapter : Expression {
             misc::enable_when<std::is_void<P>::value> = misc::enabler>
     retType operator()(ParserState<Iterator> &state) const {
         this->expr(state);
-        retType r;
+        auto r = retType();
         if(state.result()) {
             r = this->mapper(state);
         }
-        return std::move(r);
+        return r;
     }
 
     template <typename Iterator, typename P = typename T::retType,
             misc::enable_when<!std::is_void<P>::value> = misc::enabler>
     retType operator()(ParserState<Iterator> &state) const {
         auto v = this->expr(state);
-        retType r;
+        auto r = retType();
         if(state.result()) {
             r = this->mapper(state, std::move(v));
         }
-        return std::move(r);
+        return r;
     }
 };
 

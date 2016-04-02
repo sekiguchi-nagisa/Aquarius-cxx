@@ -91,7 +91,7 @@ struct Parser {
         if(state.result()) {
             r = ParsedResult<void>(true);
         }
-        return std::move(r);
+        return r;
     }
 
     template <typename RandomAccessIterator, typename P = retType,
@@ -105,7 +105,7 @@ struct Parser {
         if(state.result()) {
             r = ParsedResult<retType>(std::move(v));
         }
-        return std::move(r);
+        return r;
     }
 };
 

@@ -12,7 +12,7 @@ var opts = ['O0', 'O1', 'O2', 'O3']
 echo -e "target input file: $target\n" > $output
 for $opt in $opts {
     echo "test -$opt option" >> $output
-    c++ -std=c++11 -$opt -I../../../include -I../simple_json_parser.hpp ../main.cpp -o example_json_$opt
+    clang++ -std=c++11 -$opt -I../../../include -I../simple_json_parser.hpp ../main.cpp -o example_json_$opt
     if $? != 0 {
         echo compilation error 1>&2
         exit 1
