@@ -452,7 +452,7 @@ template <typename L, typename R,
                           && std::is_void<typename R::retType>::value> = misc::enabler>
 constexpr SequenceVoid<L, R> seqHelper(L left, R right) {
     return SequenceVoid<L, R>(left, right);
-};
+}
 
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
@@ -460,7 +460,7 @@ template <typename L, typename R,
                           && std::is_void<typename R::retType>::value> = misc::enabler>
 constexpr SequenceRightVoid<L, R> seqHelper(L left, R right) {
     return SequenceRightVoid<L, R>(left, right);
-};
+}
 
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
@@ -468,7 +468,7 @@ template <typename L, typename R,
                           && !std::is_void<typename R::retType>::value> = misc::enabler>
 constexpr SequenceLeftVoid<L, R> seqHelper(L left, R right) {
     return SequenceLeftVoid<L, R>(left, right);
-};
+}
 
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
@@ -476,7 +476,7 @@ template <typename L, typename R,
                           && !std::is_void<typename R::retType>::value> = misc::enabler>
 constexpr Sequence<L, R> seqHelper(L left, R right) {
     return Sequence<L, R>(left, right);
-};
+}
 
 
 template <typename L, typename R>

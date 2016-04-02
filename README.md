@@ -2,3 +2,7 @@
 
 # Aquarius-cxx
 a compile time parser generator for C++11/14
+
+## Build Requirement
+
+* clang3.4 or later
