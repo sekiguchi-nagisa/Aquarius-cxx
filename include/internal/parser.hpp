@@ -29,7 +29,7 @@ private:
 
 public:
     ParsedResult() = default;
-    ParsedResult(T &&value) : value_(std::move(value)) { }
+    explicit ParsedResult(T &&value) : value_(std::move(value)) { }
 
     ParsedResult(ParsedResult &&r) : value_(std::move(r.value_)) { }
 

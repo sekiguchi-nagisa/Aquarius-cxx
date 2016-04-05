@@ -136,7 +136,7 @@ private:
 public:
     Optional() : value_(nullptr) { }
 
-    Optional(T &&t) : value_(new T) {
+    explicit Optional(T &&t) : value_(new T) {
         *this->value_ = std::move(t);
     }
 

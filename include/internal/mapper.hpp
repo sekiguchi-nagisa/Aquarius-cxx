@@ -111,7 +111,7 @@ struct JoinerBase : expression::Mapper {
 
     T expr;
 
-    constexpr JoinerBase(T expr) : expr(expr) { }
+    constexpr explicit JoinerBase(T expr) : expr(expr) { }
 };
 
 

@@ -93,7 +93,7 @@ struct Char : Expression {
 
     char ch;
 
-    constexpr Char(char ch) : ch(ch) { }
+    constexpr explicit Char(char ch) : ch(ch) { }
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {
