@@ -60,6 +60,53 @@ struct Any : Expression {
     }
 };
 
+template <bool B>
+struct Utf8Util {
+    unsigned int utf8ByteSize(unsigned char b) {
+        static const unsigned char table[256] = {
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+        };
+        return table[b];
+    }
+};
+
+struct Utf8Any : Expression, Utf8Util<true> {
+    using retType = void;
+
+    constexpr Utf8Any() { }
+
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
+        if(state.remainedSize() > 0) {
+            unsigned int size = this->utf8ByteSize(*state.cursor());
+            if(size > 0 && size < 5) {
+                if(state.remainedSize() >= size) {
+                    state.cursor() += size;
+                    return;
+                }
+            }
+        }
+        state.reportFailure();
+    }
+};
+
 struct StringLiteral : Expression {
     using retType = void;
 

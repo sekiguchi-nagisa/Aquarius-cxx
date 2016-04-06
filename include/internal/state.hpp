@@ -55,6 +55,10 @@ public:
         return std::distance(this->begin_, this->cursor_);
     }
 
+    size_t remainedSize() const {
+        return std::distance(this->cursor_, this->end_);
+    }
+
     void reportFailure() {
         this->result_ = false;
     }

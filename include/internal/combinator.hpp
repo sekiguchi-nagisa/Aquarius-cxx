@@ -38,6 +38,13 @@ constexpr expression::CharClass operator ""_set(const char *text, std::size_t si
 
 } // inline namespace ascii
 
+namespace utf8 {
+
+constexpr expression::Utf8Any ANY;
+
+} // namespace utf8
+
+
 constexpr expression::Empty EMPTY;
 
 constexpr expression::CaptureHolder text;
