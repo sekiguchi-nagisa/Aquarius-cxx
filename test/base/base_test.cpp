@@ -18,7 +18,7 @@ constexpr bool check_same(P) {
 };
 
 
-TEST(base, any) {
+TEST(base, any1) {
     using namespace aquarius;
 
     check_unit(ANY);
@@ -51,6 +51,36 @@ TEST(base, any) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
 }
+
+TEST(base, any2) {
+    using namespace aquarius;
+
+    std::string input;
+    {
+        char buf[] = {static_cast<char>(0xE3), static_cast<char>(0x81),
+                      static_cast<char>(0x82), static_cast<char>(0x00)};  // 'あ'
+        input = std::string(buf);
+    }
+    auto state = createState(input.begin(), input.end());
+
+    utf8::ANY(state);
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3u, state.consumedSize()));
+
+    // failed case
+    {
+        char buf[] = {static_cast<char>(243), static_cast<char>(23), static_cast<char>(0x00)};
+        input = std::string(buf);
+    }
+    state = createState(input.begin(), input.end());
+
+    utf8::ANY(state);
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+}
+
 
 TEST(base, string1) {
     using namespace aquarius;

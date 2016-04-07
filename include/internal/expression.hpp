@@ -62,7 +62,7 @@ struct Any : Expression {
 
 template <bool B>
 struct Utf8Util {
-    unsigned int utf8ByteSize(unsigned char b) {
+    unsigned int utf8ByteSize(unsigned char b) const {
         static const unsigned char table[256] = {
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
