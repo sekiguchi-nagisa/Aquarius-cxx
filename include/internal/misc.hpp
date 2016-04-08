@@ -25,13 +25,11 @@ namespace misc {
 /**
  * type helper
  */
-extern void *enabler;
-
 template <bool cond, typename T>
 using enable_if_t = typename std::enable_if<cond, T>::type;
 
 template <bool cond>
-using enable_when = enable_if_t<cond, void> *&;
+using enable_when = enable_if_t<cond, std::nullptr_t>;
 
 /**
  * check whether a type is specialization of a specified template.

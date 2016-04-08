@@ -64,39 +64,39 @@ constexpr auto repeat(T expr) -> decltype(repeat<Low, High>(expr, expression::Em
     return repeat<Low, High>(expr, expression::Empty());
 }
 
-template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
 constexpr auto operator*(T expr) -> decltype(repeat(expr)) {
     return repeat(expr);
 }
 
-template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
 constexpr auto operator+(T expr) -> decltype(repeat<1>(expr)) {
     return repeat<1>(expr);
 }
 
-template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
 constexpr auto operator-(T expr) -> decltype(expression::optionHelper(expr)) {
     return expression::optionHelper(expr);
 }
 
-template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
 constexpr expression::NotPredicate<T> operator!(T expr) {
     return expression::NotPredicate<T>(expr);
 }
 
-template <typename T, misc::enable_when<expression::is_expr<T>::value> = misc::enabler>
+template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
 constexpr auto operator&(T expr) -> decltype(!(!expr)) {
     return !(!expr);
 }
 
 template <typename L, typename R,
-        misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
+        misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = nullptr>
 constexpr auto operator>>(L left, R right) -> decltype(expression::seqHelper(left, right)) {
     return expression::seqHelper(left, right);
 }
 
 template <typename L, typename R,
-        misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = misc::enabler>
+        misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = nullptr>
 constexpr auto operator|(L left, R right) -> decltype(expression::choiceHelper(left, right)) {
     return expression::choiceHelper(left, right);
 }
@@ -108,7 +108,7 @@ constexpr expression::NonTerminal<T> nterm() {
 
 template <typename T, typename M,
         misc::enable_when<expression::is_expr<T>::value &&
-                          expression::is_mapper<M>::value> = misc::enabler>
+                          expression::is_mapper<M>::value> = nullptr>
 constexpr expression::MapperAdapter<T, M> operator>>(T expr, M mapper) {
     return expression::MapperAdapter<T, M>(expr, mapper);
 }

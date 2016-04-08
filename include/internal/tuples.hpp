@@ -43,22 +43,22 @@ struct is_tuple<const std::tuple<A ...> &> : std::true_type {};
 /**
  * for tuple concatenation
  */
-template <typename L, typename R, enable_when<!is_tuple<L>::value && !is_tuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<!is_tuple<L>::value && !is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::make_tuple(std::move(l), std::move(r))) {
     return std::make_tuple(std::move(l), std::move(r));
 }
 
-template <typename L, typename R, enable_when<is_tuple<L>::value && !is_tuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<is_tuple<L>::value && !is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::make_tuple(std::move(r)))) {
     return std::tuple_cat(std::move(l), std::make_tuple(std::move(r)));
 }
 
-template <typename L, typename R, enable_when<!is_tuple<L>::value && is_tuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<!is_tuple<L>::value && is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::make_tuple(std::move(l)), std::move(r))) {
     return std::tuple_cat(std::make_tuple(std::move(l)), std::move(r));
 }
 
-template <typename L, typename R, enable_when<is_tuple<L>::value && is_tuple<R>::value> = enabler>
+template <typename L, typename R, enable_when<is_tuple<L>::value && is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) -> decltype(std::tuple_cat(std::move(l), std::move(r))) {
     return std::tuple_cat(std::move(l), std::move(r));
 }
@@ -159,13 +159,13 @@ template <typename T>
 using type_of_constructor_t = typename type_of_constructor<T>::type;
 
 template <typename T, typename ... Arg,
-        misc::enable_when<!std::is_pointer<T>::value> = misc::enabler>
+        misc::enable_when<!std::is_pointer<T>::value> = nullptr>
 inline T construct(Arg && ...arg) {
     return T(std::forward<Arg>(arg)...);
 }
 
 template <typename T, typename ... Arg,
-        misc::enable_when<std::is_pointer<T>::value> = misc::enabler>
+        misc::enable_when<std::is_pointer<T>::value> = nullptr>
 inline auto construct(Arg && ...arg) -> std::unique_ptr<typename std::remove_pointer<T>::type> {
     using P = typename std::remove_pointer<T>::type;
     return std::unique_ptr<P>(new P(std::forward<Arg>(arg)...));

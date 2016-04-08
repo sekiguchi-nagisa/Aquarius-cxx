@@ -266,13 +266,13 @@ struct Repeat : RepeatBase<T, D, Low, High> {
 };
 
 template <size_t Low, size_t High, typename T, typename D,
-        misc::enable_when<is_expr<T>::value && std::is_void<typename T::retType>::value> = misc::enabler>
+        misc::enable_when<is_expr<T>::value && std::is_void<typename T::retType>::value> = nullptr>
 constexpr RepeatVoid<T, D, Low, High> repeatHelper(T expr, D delim) {
     return RepeatVoid<T, D, Low, High>(expr, delim);
 }
 
 template <size_t Low, size_t High, typename T, typename D,
-        misc::enable_when<is_expr<T>::value && !std::is_void<typename T::retType>::value> = misc::enabler>
+        misc::enable_when<is_expr<T>::value && !std::is_void<typename T::retType>::value> = nullptr>
 constexpr Repeat<T, D, Low, High> repeatHelper(T expr, D delim) {
     return Repeat<T, D, Low, High>(expr, delim);
 }
@@ -317,13 +317,13 @@ struct Option : UnaryExpr<T> {
 };
 
 template <typename T,
-        misc::enable_when<is_expr<T>::value && std::is_void<typename T::retType>::value> = misc::enabler>
+        misc::enable_when<is_expr<T>::value && std::is_void<typename T::retType>::value> = nullptr>
 constexpr OptionVoid<T> optionHelper(T expr) {
     return OptionVoid<T>(expr);
 }
 
 template <typename T,
-        misc::enable_when<is_expr<T>::value && !std::is_void<typename T::retType>::value> = misc::enabler>
+        misc::enable_when<is_expr<T>::value && !std::is_void<typename T::retType>::value> = nullptr>
 constexpr Option<T> optionHelper(T expr) {
     return Option<T>(expr);
 }
@@ -496,7 +496,7 @@ struct Sequence : BinaryExpr<L, R> {
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
                           && std::is_void<typename L::retType>::value
-                          && std::is_void<typename R::retType>::value> = misc::enabler>
+                          && std::is_void<typename R::retType>::value> = nullptr>
 constexpr SequenceVoid<L, R> seqHelper(L left, R right) {
     return SequenceVoid<L, R>(left, right);
 }
@@ -504,7 +504,7 @@ constexpr SequenceVoid<L, R> seqHelper(L left, R right) {
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
                           && !std::is_void<typename L::retType>::value
-                          && std::is_void<typename R::retType>::value> = misc::enabler>
+                          && std::is_void<typename R::retType>::value> = nullptr>
 constexpr SequenceRightVoid<L, R> seqHelper(L left, R right) {
     return SequenceRightVoid<L, R>(left, right);
 }
@@ -512,7 +512,7 @@ constexpr SequenceRightVoid<L, R> seqHelper(L left, R right) {
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
                           && std::is_void<typename L::retType>::value
-                          && !std::is_void<typename R::retType>::value> = misc::enabler>
+                          && !std::is_void<typename R::retType>::value> = nullptr>
 constexpr SequenceLeftVoid<L, R> seqHelper(L left, R right) {
     return SequenceLeftVoid<L, R>(left, right);
 }
@@ -520,7 +520,7 @@ constexpr SequenceLeftVoid<L, R> seqHelper(L left, R right) {
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
                           && !std::is_void<typename L::retType>::value
-                          && !std::is_void<typename R::retType>::value> = misc::enabler>
+                          && !std::is_void<typename R::retType>::value> = nullptr>
 constexpr Sequence<L, R> seqHelper(L left, R right) {
     return Sequence<L, R>(left, right);
 }
@@ -572,7 +572,7 @@ struct Choice : BinaryExpr<L, R> {
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
                           && std::is_void<typename L::retType>::value
-                          && std::is_void<typename R::retType>::value> = misc::enabler>
+                          && std::is_void<typename R::retType>::value> = nullptr>
 constexpr ChoiceVoid<L, R> choiceHelper(L left, R right) {
     return ChoiceVoid<L, R>(left, right);
 }
@@ -580,7 +580,7 @@ constexpr ChoiceVoid<L, R> choiceHelper(L left, R right) {
 template <typename L, typename R,
         misc::enable_when<is_expr<L>::value && is_expr<R>::value
                           && !std::is_void<typename L::retType>::value
-                          && !std::is_void<typename R::retType>::value> = misc::enabler>
+                          && !std::is_void<typename R::retType>::value> = nullptr>
 constexpr Choice<L, R> choiceHelper(L left, R right) {
     return Choice<L, R>(left, right);
 }
@@ -592,14 +592,14 @@ struct NonTerminal : Expression {
     constexpr NonTerminal() {}
 
     template <typename Iterator, typename P = retType,
-            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<!std::is_void<P>::value> = nullptr>
     retType operator()(ParserState<Iterator> &state) const {
         constexpr auto p = T::pattern();
         return p(state);
     }
 
     template <typename Iterator, typename P = retType,
-            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<std::is_void<P>::value> = nullptr>
     void operator()(ParserState<Iterator> &state) const {
         constexpr auto p = T::pattern();
         p(state);
@@ -627,7 +627,7 @@ struct MapperAdapter : Expression {
     constexpr MapperAdapter(T expr, M mapper) : expr(expr), mapper(mapper) { }
 
     template <typename Iterator, typename P = typename T::retType,
-            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<std::is_void<P>::value> = nullptr>
     retType operator()(ParserState<Iterator> &state) const {
         this->expr(state);
         auto r = retType();
@@ -638,7 +638,7 @@ struct MapperAdapter : Expression {
     }
 
     template <typename Iterator, typename P = typename T::retType,
-            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<!std::is_void<P>::value> = nullptr>
     retType operator()(ParserState<Iterator> &state) const {
         auto v = this->expr(state);
         auto r = retType();

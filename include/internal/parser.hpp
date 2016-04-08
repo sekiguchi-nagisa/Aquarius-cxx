@@ -81,7 +81,7 @@ struct Parser {
     using retType = typename expression::NonTerminal<RULE>::retType;
 
     template <typename RandomAccessIterator, typename P = retType,
-            misc::enable_when<std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<std::is_void<P>::value> = nullptr>
     ParsedResult<void> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
         constexpr auto p = RULE::pattern();
 
@@ -95,7 +95,7 @@ struct Parser {
     }
 
     template <typename RandomAccessIterator, typename P = retType,
-            misc::enable_when<!std::is_void<P>::value> = misc::enabler>
+            misc::enable_when<!std::is_void<P>::value> = nullptr>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
         constexpr auto p = RULE::pattern();
 
