@@ -36,6 +36,10 @@ constexpr expression::CharClass operator ""_set(const char *text, std::size_t si
     return expression::CharClass(ascii_map::convertToAsciiMap(text, size));
 }
 
+//constexpr expression::CharClass operator ""_set(const char *text, std::size_t size) {
+//    return expression::CharClass(ascii_map::convertToAsciiMap(text, size));
+//}
+
 } // inline namespace ascii
 
 namespace utf8 {
