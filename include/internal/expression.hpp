@@ -36,18 +36,19 @@ struct Expression { };
 template <typename T>
 struct is_expr : std::is_base_of<Expression, T> { };
 
-struct Empty : Expression {
-    using retType = void;
+template <typename T>
+struct ExprBase : Expression {
+    using retType = T;
+};
 
+struct Empty : ExprBase<void> {
     constexpr Empty() { }
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &) const { }
 };
 
-struct Any : Expression {
-    using retType = void;
-
+struct Any : ExprBase<void> {
     constexpr Any() { }
 
     template <typename Iterator>
@@ -87,9 +88,7 @@ struct Utf8Util {
     }
 };
 
-struct Utf8Any : Expression, Utf8Util<true> {
-    using retType = void;
-
+struct Utf8Any : ExprBase<void>, Utf8Util<true> {
     constexpr Utf8Any() { }
 
     template <typename Iterator>
@@ -107,9 +106,7 @@ struct Utf8Any : Expression, Utf8Util<true> {
     }
 };
 
-struct StringLiteral : Expression {
-    using retType = void;
-
+struct StringLiteral : ExprBase<void> {
     std::size_t size;
     const char *text;
 
@@ -135,9 +132,7 @@ struct StringLiteral : Expression {
 };
 
 
-struct Char : Expression {
-    using retType = void;
-
+struct Char : ExprBase<void> {
     char ch;
 
     constexpr explicit Char(char ch) : ch(ch) { }
@@ -152,9 +147,7 @@ struct Char : Expression {
     }
 };
 
-struct CharClass : Expression {
-    using retType = void;
-
+struct CharClass : ExprBase<void> {
     ascii_map::AsciiMap asciiMap;
 
     constexpr explicit CharClass(ascii_map::AsciiMap asciiMap) : asciiMap(asciiMap) { }
@@ -352,11 +345,10 @@ struct NotPredicate : UnaryExpr<T> {
 };
 
 template <typename T>
-struct Capture : Expression {
+struct Capture : ExprBase<std::string> {
     static_assert(is_expr<T>::value, "must be Expression");
 
     using exprType = typename T::retType;
-    using retType = std::string;
 
     static_assert(std::is_void<exprType>::value, "must be void type");
 
