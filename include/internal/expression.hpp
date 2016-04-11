@@ -174,14 +174,38 @@ struct UnaryExpr : Expression {
 };
 
 template <typename T, typename D, size_t Low, size_t High>
-struct RepeatBase : UnaryExpr<T> {
+struct RepeatBaseCommon : UnaryExpr<T> {
     static_assert(is_expr<D>::value, "must be Expression");
     static_assert(std::is_void<typename D::retType>::value, "must be void type");
     static_assert(Low < High, "invalid interval");
 
+    constexpr explicit RepeatBaseCommon(T expr) : UnaryExpr<T>(expr) {}
+};
+
+template <typename T, typename D, size_t Low, size_t High>
+struct RepeatBase : RepeatBaseCommon<T, D, Low, High> {
     D delim;
 
-    constexpr RepeatBase(T expr, D delim) : UnaryExpr<T>(expr), delim(delim) { }
+    constexpr RepeatBase(T expr, D delim) : RepeatBaseCommon<T, D, Low, High>(expr), delim(delim) { }
+
+    template <typename Iterator>
+    bool matchDelim(ParserState<Iterator> &state, size_t index) const {
+        if(index > 0) {
+            this->delim(state);
+            return state.result();
+        }
+        return true;
+    }
+};
+
+template <typename T, size_t Low, size_t High>
+struct RepeatBase<T, Empty, Low, High> : RepeatBaseCommon<T, Empty, Low, High> {
+    constexpr RepeatBase(T expr, Empty) : RepeatBaseCommon<T, Empty, Low, High>(expr) { }
+
+    template <typename Iterator>
+    bool matchDelim(ParserState<Iterator> &, size_t) const {
+        return true;
+    }
 };
 
 template <typename T, typename D, size_t Low, size_t High>
@@ -197,11 +221,8 @@ struct RepeatVoid : RepeatBase<T, D, Low, High> {
         size_t index = 0;
         for(; index < High; index++) {
             // match delimiter
-            if(!std::is_same<D, Empty>::value && index > 0) {
-                this->delim(state);
-                if(!state.result()) {
-                    break;
-                }
+            if(!this->matchDelim(state, index)) {
+                break;
             }
 
             // match expression
@@ -235,11 +256,8 @@ struct Repeat : RepeatBase<T, D, Low, High> {
         size_t index = 0;
         for(; index < High; index++) {
             // match delimiter
-            if(!std::is_same<D, Empty>::value && index > 0) {
-                this->delim(state);
-                if(!state.result()) {
-                    break;
-                }
+            if(!this->matchDelim(state, index)) {
+                break;
             }
 
             // match expression
