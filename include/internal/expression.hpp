@@ -391,7 +391,7 @@ struct BinaryExpr : Expression {
 template <typename L, typename R>
 struct SequenceVoid : BinaryExpr<L, R> {
     static_assert(std::is_void<typename L::retType>::value
-                  && std::is_void<typename R::retType>::value, "left and right epxression must be void type");
+                  && std::is_void<typename R::retType>::value, "left and right expression must be void type");
 
     using retType = void;
 
@@ -413,7 +413,7 @@ struct SequenceVoid : BinaryExpr<L, R> {
 template <typename L, typename R>
 struct SequenceRightVoid : BinaryExpr<L, R> {
     static_assert(!std::is_void<typename L::retType>::value
-                  && std::is_void<typename R::retType>::value, "right epxression must be void type");
+                  && std::is_void<typename R::retType>::value, "right expression must be void type");
 
     using retType = typename L::retType;
 
@@ -436,7 +436,7 @@ struct SequenceRightVoid : BinaryExpr<L, R> {
 template <typename L, typename R>
 struct SequenceLeftVoid : BinaryExpr<L, R> {
     static_assert(std::is_void<typename L::retType>::value
-                  && !std::is_void<typename R::retType>::value, "left epxression must be void type");
+                  && !std::is_void<typename R::retType>::value, "left expression must be void type");
 
     using retType = typename R::retType;
 
@@ -460,7 +460,7 @@ struct SequenceLeftVoid : BinaryExpr<L, R> {
 template <typename L, typename R>
 struct Sequence : BinaryExpr<L, R> {
     static_assert(!std::is_void<typename L::retType>::value
-                  && !std::is_void<typename R::retType>::value, "left and right epxression must not be void type");
+                  && !std::is_void<typename R::retType>::value, "left and right expression must not be void type");
 
     using leftType = typename L::retType;
     using rightType = typename R::retType;
