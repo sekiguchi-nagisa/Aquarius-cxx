@@ -83,7 +83,7 @@ public:
 
     ~JSONString() = default;
 
-    const std::string &value() {
+    const std::string &value() const {
         return this->value_;
     }
 };

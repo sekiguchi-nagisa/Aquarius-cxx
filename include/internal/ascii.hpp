@@ -46,14 +46,10 @@ struct AsciiMap {
         return AsciiMap(~this->map[0], ~this->map[1]);
     }
 
-    bool contains(char ch) const {
-        if(ch < 0) {
-            return false;
-        }
-        if(ch < 64) {
-            return this->map[0] & (1L << ch);
-        }
-        return this->map[1] & (1L << (ch - 64));
+    constexpr bool contains(char ch) const {
+        return ch < 0 ? false :
+               ch < 64 ? this->map[0] & (1L << ch) :
+               this->map[1] & (1L << (ch - 64));
     }
 };
 
