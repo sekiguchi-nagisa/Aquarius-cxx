@@ -1,26 +1,82 @@
 language: cpp
 
-sudo: required
-dist: trusty
+matrix:
+  include:
+    # gcc 4.9
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.9
+            - g++-4.9
+      env: CC_BIN=gcc-4.9 CXX_BIN=g++-4.9
 
-compiler:
-  - clang
+    # gcc 5
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-5
+            - g++-5
+      env: CC_BIN=gcc-5 CXX_BIN=g++-5
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - cmake
-      - clang-3.4
-      - gcc-4.8
-      - g++-4.8
+    # clang 3.5
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.5
+          packages:
+            - clang-3.5
+      env: CC_BIN=clang-3.5 CXX_BIN=clang++-3.5
 
-install:
- - cmake -DCMAKE_CXX_COMPILER=clang++
- - make
+    # clang 3.6
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env: CC_BIN=clang-3.6 CXX_BIN=clang++-3.6
+
+    # clang 3.7
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env: CC_BIN=clang-3.7 CXX_BIN=clang++-3.7
+
+    # clang 3.8
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+      env: CC_BIN=clang-3.8 CXX_BIN=clang++-3.8
 
 script:
+  - cmake -DCMAKE_C_COMPILER=$CC_BIN -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG
+  - make
   - ctest --output-on-failure
 
 notifications:

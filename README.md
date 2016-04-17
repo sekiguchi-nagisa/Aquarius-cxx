@@ -3,6 +3,6 @@
 # Aquarius-cxx
 a compile time parser generator for C++11/14
 
-## Build Requirement
-
-* clang3.4 or later
+## Tested compiler
+* gcc (4.9, 5)
+* clang (3.5, 3.6, 3.7, 3.8)
