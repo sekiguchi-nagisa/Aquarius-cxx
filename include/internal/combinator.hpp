@@ -85,7 +85,7 @@ constexpr expression::NotPredicate<T> operator!(T expr) {
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
-constexpr auto operator&(T expr) -> decltype(!(!expr)) {
+constexpr expression::NotPredicate<expression::NotPredicate<T>> operator~(T expr) {
     return !(!expr);
 }
 

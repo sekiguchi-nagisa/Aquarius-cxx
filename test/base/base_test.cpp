@@ -275,7 +275,7 @@ TEST(base, charClass3) {
 TEST(base, andPredicate) {
     using namespace aquarius;
 
-    constexpr auto p = &"abc"_str;
+    constexpr auto p = ~"abc"_str;
     check_unit(p);
 
     std::string input("abc");
