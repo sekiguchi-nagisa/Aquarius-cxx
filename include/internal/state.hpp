@@ -35,9 +35,14 @@ private:
      */
     bool result_;
 
+    /**
+     * indicate longest matched failure
+     */
+    RandomAccessIterator failure_;
+
 public:
     ParserState(RandomAccessIterator begin, RandomAccessIterator end) :
-            begin_(begin), end_(end), cursor_(begin), result_(true) { }
+            begin_(begin), end_(end), cursor_(begin), result_(true), failure_(begin) { }
 
     const RandomAccessIterator begin() const {
         return this->begin_;
@@ -61,6 +66,13 @@ public:
 
     void reportFailure() {
         this->result_ = false;
+        if(this->cursor_ > this->failure_) {
+            this->failure_ = this->cursor_;
+        }
+    }
+
+    size_t failurePos() const {
+        return std::distance(this->cursor_, this->failure_);
     }
 
     void setResult(bool set) {
