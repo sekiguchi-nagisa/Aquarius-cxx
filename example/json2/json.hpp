@@ -124,7 +124,7 @@ public:
 template <typename T, typename ... A>
 inline std::unique_ptr<T> make_unique(A && ...arg) {
     return std::unique_ptr<T>(new T(std::forward<A>(arg)...));
-};
+}
 
 struct KeyComparator {
     bool operator()(const std::unique_ptr<JSONString> &x, const std::unique_ptr<JSONString> &y) const {

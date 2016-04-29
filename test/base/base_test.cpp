@@ -15,7 +15,7 @@ template <typename T, typename P>
 constexpr bool check_same(P) {
     static_assert(std::is_same<typename P::retType, T>::value, "must be same type");
     return true;
-};
+}
 
 
 TEST(base, any1) {
