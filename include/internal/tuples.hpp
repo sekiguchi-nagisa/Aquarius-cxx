@@ -29,16 +29,9 @@ namespace misc {
  * check whether a type is tuple or not.
  */
 template <typename T>
-struct is_tuple : std::false_type {};
+struct is_tuple : is_specialization_of<typename std::remove_reference<
+        typename std::remove_const<T>::type>::type, std::tuple> { };
 
-template <typename ... A>
-struct is_tuple<std::tuple<A ...>> : std::true_type {};
-
-template <typename ... A>
-struct is_tuple<std::tuple<A ...> &> : std::true_type {};
-
-template <typename ... A>
-struct is_tuple<const std::tuple<A ...> &> : std::true_type {};
 
 /**
  * for tuple concatenation
