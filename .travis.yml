@@ -10,9 +10,8 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-4.9
             - g++-4.9
-      env: CC_BIN=gcc-4.9 CXX_BIN=g++-4.9
+      env: CXX_BIN=g++-4.9
 
     # gcc 5
     - os: linux
@@ -22,9 +21,8 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-5
             - g++-5
-      env: CC_BIN=gcc-5 CXX_BIN=g++-5
+      env: CXX_BIN=g++-5
 
     # gcc 6
     - os: linux
@@ -34,9 +32,8 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-6
             - g++-6
-      env: CC_BIN=gcc-6 CXX_BIN=g++-6
+      env: CXX_BIN=g++-6
 
     # clang 3.5
     - os: linux
@@ -48,7 +45,7 @@ matrix:
             - llvm-toolchain-precise-3.5
           packages:
             - clang-3.5
-      env: CC_BIN=clang-3.5 CXX_BIN=clang++-3.5
+      env: CXX_BIN=clang++-3.5
 
     # clang 3.6
     - os: linux
@@ -60,7 +57,7 @@ matrix:
             - llvm-toolchain-precise-3.6
           packages:
             - clang-3.6
-      env: CC_BIN=clang-3.6 CXX_BIN=clang++-3.6
+      env: CXX_BIN=clang++-3.6
 
     # clang 3.7
     - os: linux
@@ -72,7 +69,7 @@ matrix:
             - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
-      env: CC_BIN=clang-3.7 CXX_BIN=clang++-3.7
+      env: CXX_BIN=clang++-3.7
 
     # clang 3.8
     - os: linux
@@ -84,10 +81,10 @@ matrix:
             - llvm-toolchain-precise-3.8
           packages:
             - clang-3.8
-      env: CC_BIN=clang-3.8 CXX_BIN=clang++-3.8
+      env: CXX_BIN=clang++-3.8
 
 script:
-  - cmake -DCMAKE_C_COMPILER=$CC_BIN -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG
+  - cmake -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG
   - make
   - ctest --output-on-failure
 
@@ -96,3 +93,4 @@ notifications:
     - s.nagisa.xyz@gmail.com
   on_success: change
   on_failure: always
+S
