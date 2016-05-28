@@ -93,4 +93,3 @@ notifications:
     - s.nagisa.xyz@gmail.com
   on_success: change
   on_failure: always
-S
