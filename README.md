@@ -4,5 +4,5 @@
 a header only compile time parser generator for C++11/14
 
 ## Tested compiler
-* gcc (4.9, 5)
+* gcc (4.9, 5, 6)
 * clang (3.5, 3.6, 3.7, 3.8)
