@@ -46,6 +46,7 @@ struct AppendToArray {
 
 
 using namespace aquarius;
+using namespace aquarius::ascii;
 
 constexpr auto space = *" \t\r\n"_set;
 

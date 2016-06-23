@@ -20,7 +20,7 @@
 #include "expression.hpp"
 
 namespace aquarius {
-inline namespace ascii {
+namespace ascii {
 
 constexpr expression::Any ANY;
 

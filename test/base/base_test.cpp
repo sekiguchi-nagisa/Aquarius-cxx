@@ -18,8 +18,10 @@ constexpr bool check_same(P) {
 }
 
 
+using namespace aquarius;
+using namespace aquarius::ascii;
+
 TEST(base, any1) {
-    using namespace aquarius;
 
     check_unit(ANY);
 
@@ -54,6 +56,7 @@ TEST(base, any1) {
 
 TEST(base, any2) {
     using namespace aquarius;
+    using namespace aquarius::ascii;
 
     std::string input;
     {
@@ -84,6 +87,7 @@ TEST(base, any2) {
 
 TEST(base, string1) {
     using namespace aquarius;
+    using namespace aquarius::ascii;
 
     constexpr auto p = "a"_str;
     check_unit(p);
