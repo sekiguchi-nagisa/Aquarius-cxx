@@ -127,23 +127,38 @@ public:
     }
 
     double &asNumber() {
-        return this->is(NUMBER) ? this->num : throw std::logic_error("must be NUMBER");
+        if(!this->is(NUMBER)) {
+            throw std::logic_error("must be NUMBER");
+        }
+        return this->num;
     }
 
     bool &asBool() {
-        return this->is(BOOL) ? this->b : throw std::logic_error("must be BOOL");
+        if(!this->is(BOOL)) {
+            throw std::logic_error("must be BOOL");
+        }
+        return this->b;
     }
 
     std::string &asString() {
-        return this->is(STRING) ? this->str : throw std::logic_error("must be STRING");
+        if(!this->is(STRING)) {
+            throw std::logic_error("must be STRING");
+        }
+        return this->str;
     }
 
     array_type &asArray() {
-        return this->is(ARRAY) ? this->array : throw std::logic_error("must be ARRAY");
+        if(!this->is(ARRAY)) {
+            throw std::logic_error("must be ARRAY");
+        }
+        return this->array;
     }
 
     map_type &asObject() {
-        return this->is(OBJECT) ? this->map : throw std::logic_error("must be OBJECT");
+        if(!this->is(OBJECT)) {
+            throw std::logic_error("must be OBJECT");
+        }
+        return this->map;
     }
 };
 
