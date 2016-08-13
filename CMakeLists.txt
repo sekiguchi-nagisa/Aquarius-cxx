@@ -20,6 +20,7 @@ include_directories(include)
 
 add_subdirectory(example/json)
 add_subdirectory(example/json2)
+add_subdirectory(example/json3)
 
 enable_testing()
 add_subdirectory(test)
