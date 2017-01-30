@@ -2,7 +2,7 @@
 #     build gtest     #
 #+++++++++++++++++++++#
 
-set(GTEST_V "1.7.0")
+set(GTEST_V "1.8.0")
 set(GTEST_URL "https://github.com/google/googletest/archive/release-${GTEST_V}.zip")
 set(GTEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/googletest-${GTEST_V}.zip)
 set(GTEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest-release-${GTEST_V})
