@@ -28,7 +28,6 @@ matrix:
 
     # gcc 6
     - os: linux
-      dis: trusty
       compiler: gcc
       addons:
         apt:
