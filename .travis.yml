@@ -28,6 +28,8 @@ matrix:
 
     # gcc 6
     - os: linux
+      dist: trusty
+      sudo: required
       compiler: gcc
       addons:
         apt:
