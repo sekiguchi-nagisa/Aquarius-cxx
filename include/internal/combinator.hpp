@@ -29,7 +29,7 @@ constexpr expression::StringLiteral operator "" _str(const char *text, std::size
 }
 
 constexpr expression::Char operator ""_ch(char ch) {
-    return ch >= 0 ? expression::Char(ch) : throw std::logic_error("must be ascii character");
+    return ch >= 0 ? expression::Char(ch) : misc::constexpr_error<expression::Char>("must be ascii character");
 }
 
 constexpr expression::CharClass operator ""_set(const char *text, std::size_t size) {

@@ -112,6 +112,10 @@ template <typename T>
 using first_param_type_of_func_t = typename func_type_traits<T>::first_param_type;
 
 
+template <typename T>
+inline T constexpr_error(const char *) {
+    abort();
+}
 
 template <typename T>
 class NonCopyable {

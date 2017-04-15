@@ -21,6 +21,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <cassert>
 
 namespace json {
 
@@ -127,37 +128,27 @@ public:
     }
 
     double &asNumber() {
-        if(!this->is(NUMBER)) {
-            throw std::logic_error("must be NUMBER");
-        }
+        assert(this->is(NUMBER));
         return this->num;
     }
 
     bool &asBool() {
-        if(!this->is(BOOL)) {
-            throw std::logic_error("must be BOOL");
-        }
+        assert(this->is(BOOL));
         return this->b;
     }
 
     std::string &asString() {
-        if(!this->is(STRING)) {
-            throw std::logic_error("must be STRING");
-        }
+        assert(this->is(STRING));
         return this->str;
     }
 
     array_type &asArray() {
-        if(!this->is(ARRAY)) {
-            throw std::logic_error("must be ARRAY");
-        }
+        assert(this->is(ARRAY));
         return this->array;
     }
 
     map_type &asObject() {
-        if(!this->is(OBJECT)) {
-            throw std::logic_error("must be OBJECT");
-        }
+        assert(this->is(OBJECT));
         return this->map;
     }
 };

@@ -17,12 +17,14 @@
 #ifndef AQUARIUS_CXX_INTERNAL_ASCII_HPP
 #define AQUARIUS_CXX_INTERNAL_ASCII_HPP
 
+#include "misc.hpp"
+
 namespace aquarius {
 namespace ascii_map {
 
 // ascii map
 constexpr std::uint64_t setBit(std::uint64_t bitmap, char ch) {
-    return ch >= 0 && ch < 64 ? bitmap | (1L << ch) : throw std::logic_error("");
+    return ch >= 0 && ch < 64 ? bitmap | (1L << ch) : misc::constexpr_error<std::uint64_t>("");
 }
 
 struct AsciiMap {
@@ -39,7 +41,7 @@ struct AsciiMap {
     constexpr AsciiMap operator+(char ch) const {
         return ch >= 0 && ch < 64 ? AsciiMap(setBit(this->map[0], ch), this->map[1]) :
                ch >= 64 ? AsciiMap(this->map[0], setBit(this->map[1], ch - 64)) :
-               throw std::logic_error("must be ascii character");
+               misc::constexpr_error<AsciiMap>("must be ascii character");
     }
 
     constexpr AsciiMap operator~() const {
@@ -58,7 +60,7 @@ constexpr AsciiMap makeFromRange(AsciiMap asciiMap, char start, char stop) {
 }
 
 constexpr bool checkCharRange(char start, char stop) {
-    return start <= stop ? true : throw std::invalid_argument("start character must be stop character or less");
+    return start <= stop ? true : misc::constexpr_error<bool>("start character must be stop character or less");
 }
 
 constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index, AsciiMap map) {

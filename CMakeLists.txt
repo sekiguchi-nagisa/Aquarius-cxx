@@ -6,7 +6,7 @@ project(Aquarius-cxx)
 #     set compiler option     #
 #+++++++++++++++++++++++++++++#
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic-errors")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic-errors -fno-exceptions -fno-rtti")
 option(USE_CXX14 "use C++14" OFF)
 
 if (USE_CXX14)

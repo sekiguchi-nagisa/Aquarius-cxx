@@ -13,7 +13,8 @@ static AsciiMap createMap(char (&bits)[N]) {
 
     for(char ch : bits) {
         if(ch < 0) {
-            throw std::logic_error("not negate");
+            fprintf(stderr, "not negate\n");
+            abort();
         }
 
         if(ch >= 0 && ch < 64) {
