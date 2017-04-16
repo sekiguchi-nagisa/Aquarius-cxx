@@ -44,24 +44,24 @@ struct AppendToMap {
 using namespace aquarius;
 using namespace aquarius::ascii;
 
-constexpr auto space = *" \t\r\n"_set;
+constexpr auto space = *set(" \t\r\n");
 
-constexpr auto objectOpen = '{'_ch >> space;
-constexpr auto objectClose = '}'_ch >> space;
+constexpr auto objectOpen = ch('{') >> space;
+constexpr auto objectClose = ch('}') >> space;
 
-constexpr auto arrayOpen = '['_ch >> space;
-constexpr auto arrayClose = ']'_ch >> space;
+constexpr auto arrayOpen = ch('[') >> space;
+constexpr auto arrayClose = ch(']') >> space;
 
-constexpr auto kvSep = space >> ':'_ch >> space;
-constexpr auto vSep = ','_ch >> space;
+constexpr auto kvSep = space >> ch(':') >> space;
+constexpr auto vSep = ch(',') >> space;
 
-constexpr auto escape = '\\'_ch >> "\"\\/bfnrt"_set;
-constexpr auto string = text[ '"'_ch >> *(escape | !"\"\\"_set >> ANY) >> '"'_ch ];
+constexpr auto escape = ch('\\') >> set("\"\\/bfnrt");
+constexpr auto string = text[ ch('"') >> *(escape | !set("\"\\") >> ANY) >> ch('"') ];
 
-constexpr auto integer = '0'_ch | "1-9"_set >> *"0-9"_set;
-constexpr auto exp = "eE"_set >> -"+-"_set >> integer;
-constexpr auto number = text[ -'-'_ch >> integer >> '.'_ch >> +"0-9"_set >> -exp
-                        | -'-'_ch >> integer ] >> map<ToNumber>();
+constexpr auto integer = ch('0') | set("1-9") >> *set("0-9");
+constexpr auto exp = set("eE") >> -set("+-") >> integer;
+constexpr auto number = text[ -ch('-') >> integer >> ch('.') >> +set("0-9") >> -exp
+                        | -ch('-') >> integer ] >> map<ToNumber>();
 
 AQUARIUS_DECL_RULE(JSON, object);
 AQUARIUS_DECL_RULE(JSON, array);
@@ -72,9 +72,9 @@ AQUARIUS_DEFINE_RULE(
          | number
          | nterm<object>()
          | nterm<array>()
-         | "true"_str >> supply(true) >> construct<JSON>()
-         | "false"_str >> supply(false) >> construct<JSON>()
-         | "null"_str >> construct<JSON>()
+         | str("true") >> supply(true) >> construct<JSON>()
+         | str("false") >> supply(false) >> construct<JSON>()
+         | str("null") >> construct<JSON>()
         ) >> space
 );
 

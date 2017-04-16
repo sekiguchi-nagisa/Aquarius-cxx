@@ -89,7 +89,7 @@ TEST(base, string1) {
     using namespace aquarius;
     using namespace aquarius::ascii;
 
-    constexpr auto p = "a"_str;
+    constexpr auto p = str("a");
     check_unit(p);
 
     std::string input("a");
@@ -125,7 +125,7 @@ TEST(base, string1) {
 TEST(base, string2) {
     using namespace aquarius;
 
-    constexpr auto p = "abc"_str;
+    constexpr auto p = str("abc");
     check_unit(p);
 
     std::string input("abcd");
@@ -161,7 +161,7 @@ TEST(base, string2) {
 TEST(base, charClass1) {
     using namespace aquarius;
 
-    constexpr auto p = 'a'_ch;
+    constexpr auto p = ch('a');
     check_unit(p);
 
     std::string input("abc");
@@ -197,7 +197,7 @@ TEST(base, charClass1) {
 TEST(base, charClass2) {
     using namespace aquarius;
 
-    constexpr auto p = "a1C"_set;
+    constexpr auto p = set("a1C");
     check_unit(p);
 
     std::string input("1Ca");
@@ -241,7 +241,7 @@ TEST(base, charClass2) {
 TEST(base, charClass3) {
     using namespace aquarius;
 
-    constexpr auto p = "0-9_a-z"_set;
+    constexpr auto p = set("0-9_a-z");
     check_unit(p);
 
     std::string input("10_aeh9op62qz8l");
@@ -279,7 +279,7 @@ TEST(base, charClass3) {
 TEST(base, andPredicate) {
     using namespace aquarius;
 
-    constexpr auto p = ~"abc"_str;
+    constexpr auto p = ~str("abc");
     check_unit(p);
 
     std::string input("abc");
@@ -305,7 +305,7 @@ TEST(base, andPredicate) {
 TEST(base, notPredicate) {
     using namespace aquarius;
 
-    constexpr auto p = !"abc"_str;
+    constexpr auto p = !str("abc");
     check_unit(p);
 
     std::string input("1234");
@@ -331,7 +331,7 @@ TEST(base, notPredicate) {
 TEST(base, capture) {
     using namespace aquarius;
 
-    constexpr auto p = text["hello"_str];
+    constexpr auto p = text[str("hello")];
     check_same<std::string>(p);
 
     std::string input("hello");
@@ -358,7 +358,7 @@ TEST(base, capture) {
 TEST(base, zeroMore1) {
     using namespace aquarius;
 
-    constexpr auto p = *"A-Z"_set;
+    constexpr auto p = *set("A-Z");
     check_unit(p);
 
     std::string input("ABCDEFGH");
@@ -383,7 +383,7 @@ TEST(base, zeroMore1) {
 TEST(base, zeroMore2) {
     using namespace aquarius;
 
-    constexpr auto p = *text[ "ABC "_str ];
+    constexpr auto p = *text[ str("ABC ") ];
     check_same<std::vector<std::string>>(p);
 
     std::string input("ABC ABC ABC ");
@@ -414,7 +414,7 @@ TEST(base, zeroMore2) {
 TEST(base, oneMore1) {
     using namespace aquarius;
 
-    constexpr auto p = +"A-Z"_set;
+    constexpr auto p = +set("A-Z");
     check_unit(p);
 
     std::string input("ABCDEFGH");
@@ -440,7 +440,7 @@ TEST(base, oneMore1) {
 TEST(base, oneMore2) {
     using namespace aquarius;
 
-    constexpr auto p = +text[ "ABC "_str ];
+    constexpr auto p = +text[ str("ABC ") ];
     check_same<std::vector<std::string>>(p);
 
     std::string input("ABC ABC ABC ");
@@ -472,7 +472,7 @@ TEST(base, oneMore2) {
 TEST(base, repeat1) {
     using namespace aquarius;
 
-    constexpr auto p = repeat<2, 4>('a'_ch, *' '_ch);
+    constexpr auto p = repeat<2, 4>(ch('a'), *ch(' '));
     check_unit(p);
 
     std::string input("a a a a");
@@ -502,7 +502,7 @@ TEST(base, repeat1) {
 TEST(base, repeat2) {
     using namespace aquarius;
 
-    constexpr auto p = repeat<2, 4>(text [ 'a'_ch ], *' '_ch);
+    constexpr auto p = repeat<2, 4>(text [ ch('a') ], *ch(' '));
     check_same<std::vector<std::string>>(p);
 
     std::string input("a a a a");
@@ -538,7 +538,7 @@ TEST(base, repeat2) {
 TEST(base, option1) {
     using namespace aquarius;
 
-    constexpr auto p = -"hello"_str;
+    constexpr auto p = -str("hello");
     check_unit(p);
 
     std::string input("hello");
@@ -559,7 +559,7 @@ TEST(base, option1) {
 TEST(base, option2) {
     using namespace aquarius;
 
-    constexpr auto p = -text[ "world"_str ];
+    constexpr auto p = -text[ str("world") ];
     check_same<Optional<std::string>>(p);
 
     std::string input("world   ");
@@ -584,7 +584,7 @@ TEST(base, option2) {
 TEST(base, seq1) {
     using namespace aquarius;
 
-    constexpr auto p = "hello"_str >> " "_str >> "world"_str;
+    constexpr auto p = str("hello") >> str(" ") >> str("world");
     check_unit(p);
 
     std::string input("hello world");
@@ -610,7 +610,7 @@ TEST(base, seq1) {
 TEST(base, seq2) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "hello"_str ] >> " world"_str;
+    constexpr auto p = text[ str("hello") ] >> str(" world");
     check_same<std::string>(p);
 
     std::string input("hello world");
@@ -637,7 +637,7 @@ TEST(base, seq2) {
 TEST(base, seq3) {
     using namespace aquarius;
 
-    constexpr auto p = "hello "_str >> text[ "world"_str ];
+    constexpr auto p = str("hello ") >> text[ str("world") ];
     check_same<std::string>(p);
 
     std::string input("hello world");
@@ -664,7 +664,7 @@ TEST(base, seq3) {
 TEST(base, seq4) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "hello"_str ] >> " "_str >> text[ "world"_str ];
+    constexpr auto p = text[ str("hello") ] >> str(" ") >> text[ str("world") ];
     check_same<std::tuple<std::string, std::string>>(p);
 
     std::string input("hello world");
@@ -688,7 +688,7 @@ TEST(base, seq4) {
 TEST(base, seq5) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "hello"_str ] >> " "_str >> text[ "world"_str ] >> -text[ "!!"_str ];
+    constexpr auto p = text[ str("hello") ] >> str(" ") >> text[ str("world") ] >> -text[ str("!!") ];
     check_same<std::tuple<std::string, std::string, Optional<std::string>>>(p);
 
     std::string input("hello world");
@@ -724,7 +724,7 @@ TEST(base, seq5) {
 TEST(base, seq6) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "hello"_str ] >> (" "_str >> text[ "world"_str ]) >> text[ "!!"_str ];
+    constexpr auto p = text[ str("hello") ] >> (str(" ") >> text[ str("world") ]) >> text[ str("!!") ];
     check_same<std::tuple<std::string, std::string, std::string>>(p);
 
     std::string input = "hello world!!";
@@ -749,7 +749,7 @@ TEST(base, seq6) {
 TEST(base, choice) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "world"_str ] | text[ "he"_str >> "llo"_str ];
+    constexpr auto p = text[ str("world") ] | text[ str("he") >> str("llo") ];
     check_same<std::string>(p);
 
     std::string input("hello");
@@ -788,7 +788,7 @@ struct Sum {
 TEST(base, mapper) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] >> map<Sum>();
+    constexpr auto p = text[ str("12") ] >> str("+") >> text[ str("18") ] >> map<Sum>();
     check_same<int>(p);
 
     std::string input("12+18");
@@ -804,7 +804,7 @@ TEST(base, mapper) {
 TEST(base, mapper2) {
     using namespace aquarius;
 
-    constexpr auto p = text[ "12"_str ] >> "+"_str >> text[ "18"_str ] >> map_c<Sum>;
+    constexpr auto p = text[ str("12") ] >> str("+") >> text[ str("18") ] >> map_c<Sum>;
     check_same<int>(p);
 
     std::string input("12+18");
@@ -883,7 +883,7 @@ struct StrJoiner {
 TEST(base, join) {
     using namespace aquarius;
 
-    constexpr auto p = text[ 'a'_ch ] >> *' '_ch >> join<StrJoiner>(text[ 'b'_ch ]);
+    constexpr auto p = text[ ch('a') ] >> *ch(' ') >> join<StrJoiner>(text[ ch('b') ]);
     check_same<std::string>(p);
 
     std::string input("a     b");
@@ -897,7 +897,7 @@ TEST(base, join) {
 TEST(base, join_each1) {
     using namespace aquarius;
 
-    constexpr auto p = text[ 'a'_ch ] >> *' '_ch >> join_each0<StrJoiner>(text[ 'b'_ch ], *' '_ch);
+    constexpr auto p = text[ ch('a') ] >> *ch(' ') >> join_each0<StrJoiner>(text[ ch('b') ], *ch(' '));
     check_same<std::string>(p);
 
     std::string input("a     b    b    b");
@@ -911,7 +911,7 @@ TEST(base, join_each1) {
 TEST(base, join_each2) {
     using namespace aquarius;
 
-    constexpr auto p = text[ 'a'_ch ] >> *' '_ch >> join_each0<StrJoiner>(text[ "hello"_str ]);
+    constexpr auto p = text[ ch('a') ] >> *ch(' ') >> join_each0<StrJoiner>(text[ str("hello") ]);
     check_same<std::string>(p);
 
     std::string input("a     hellohellohello");
@@ -931,9 +931,9 @@ AQUARIUS_DECL_RULE(void, S);
 
 AQUARIUS_DEFINE_RULE(void, SPACE, *nterm<S>());
 
-AQUARIUS_DEFINE_RULE(void, S, " \t\n\r"_set);
+AQUARIUS_DEFINE_RULE(void, S, set(" \t\n\r"));
 
-AQUARIUS_DEFINE_RULE(void, Rep, 'b'_ch | 'a'_ch >> nterm<Rep>());
+AQUARIUS_DEFINE_RULE(void, Rep, ch('b') | ch('a') >> nterm<Rep>());
 
 }
 

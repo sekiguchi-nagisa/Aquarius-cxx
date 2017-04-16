@@ -24,31 +24,31 @@ namespace json {
 using namespace aquarius;
 using namespace aquarius::ascii;
 
-constexpr auto space = *" \t\r\n"_set;
+constexpr auto space = *set(" \t\r\n");
 
-constexpr auto objectOpen = '{'_ch >> space;
-constexpr auto objectClose = '}'_ch >> space;
+constexpr auto objectOpen = ch('{') >> space;
+constexpr auto objectClose = ch('}') >> space;
 
-constexpr auto arrayOpen = '['_ch >> space;
-constexpr auto arrayClose = ']'_ch >> space;
+constexpr auto arrayOpen = ch('[') >> space;
+constexpr auto arrayClose = ch(']') >> space;
 
-constexpr auto kvSep = space >> ':'_ch >> space;
-constexpr auto vSep = ','_ch >> space;
+constexpr auto kvSep = space >> ch(':') >> space;
+constexpr auto vSep = ch(',') >> space;
 
-constexpr auto escape = '\\'_ch >> "\"\\/bfnrt"_set;
-constexpr auto string = '"'_ch >> *(escape | !"\"\\"_set >> ANY) >> '"'_ch;
+constexpr auto escape = ch('\\') >> set("\"\\/bfnrt");
+constexpr auto string = ch('"') >> *(escape | !set("\"\\") >> ANY) >> ch('"');
 
-constexpr auto integer = '0'_ch | "1-9"_set >> *"0-9"_set;
-constexpr auto exp = "eE"_set >> -"+-"_set >> integer;
-constexpr auto number = -'-'_ch >> integer >> '.'_ch >> +"0-9"_set >> -exp
-                        | -'-'_ch >> integer;
+constexpr auto integer = ch('0') | set("1-9") >> *set("0-9");
+constexpr auto exp = set("eE") >> -set("+-") >> integer;
+constexpr auto number = -ch('-') >> integer >> ch('.') >> +set("0-9") >> -exp
+                        | -ch('-') >> integer;
 
 AQUARIUS_DECL_RULE(void, object);
 AQUARIUS_DECL_RULE(void, array);
 
 AQUARIUS_DEFINE_RULE(
         void, value,
-        (string | number | nterm<object>() | nterm<array>() | "true"_str | "false"_str | "null"_str) >> space
+        (string | number | nterm<object>() | nterm<array>() | str("true") | str("false") | str("null")) >> space
 );
 
 AQUARIUS_DEFINE_RULE(

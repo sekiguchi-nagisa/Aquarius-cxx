@@ -24,16 +24,14 @@ namespace ascii {
 
 constexpr expression::Any ANY;
 
-constexpr expression::StringLiteral operator "" _str(const char *text, std::size_t size) {
-    return expression::StringLiteral(text, size);
+template <std::size_t N>
+constexpr expression::StringLiteral str(const char (&text)[N]) {
+    return expression::StringLiteral(text, N - 1);
 }
 
-constexpr expression::Char operator ""_ch(char ch) {
-    return ch >= 0 ? expression::Char(ch) : misc::constexpr_error<expression::Char>("must be ascii character");
-}
-
-constexpr expression::CharClass operator ""_set(const char *text, std::size_t size) {
-    return expression::CharClass(ascii_map::convertToAsciiMap(text, size));
+constexpr expression::Char ch(char ch) {
+    return ch >= 0 ? expression::Char(ch) :
+           misc::constexpr_error<expression::Char>("must be ascii character");
 }
 
 template <size_t N>
