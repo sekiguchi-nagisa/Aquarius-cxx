@@ -20,7 +20,7 @@
 #include "misc.hpp"
 
 namespace aquarius {
-namespace ascii_map {
+namespace unicode_util {
 
 // ascii map
 constexpr std::uint64_t setBit(std::uint64_t bitmap, char ch) {
@@ -91,8 +91,38 @@ constexpr AsciiMap convertToAsciiMap(const char *str, size_t size) {
     return convertToAsciiMap(str, size, 0, AsciiMap());
 }
 
+template <bool B>
+struct Utf8Util {
+    unsigned int utf8ByteSize(unsigned char b) const {
+        static const unsigned char table[256] = {
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 
-} // namespace ascii_map
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+        };
+        return table[b];
+    }
+};
+
+constexpr bool isAsciiStr(const char *str, std::size_t index, std::size_t size) {
+    return index == size ? true : str[index] >= 0 && isAsciiStr(str, index + 1, size);
+}
+
+} // namespace unicode_util
 } // namespace aquarius
 
 #endif //AQUARIUS_CXX_INTERNAL_ASCII_HPP

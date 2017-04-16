@@ -1,10 +1,10 @@
 
 #include <gtest/gtest.h>
 
-#include "internal/ascii.hpp"
+#include "internal/unicode.hpp"
 
 using namespace aquarius;
-using namespace ascii_map;
+using namespace unicode_util;
 
 template <size_t N>
 static AsciiMap createMap(char (&bits)[N]) {

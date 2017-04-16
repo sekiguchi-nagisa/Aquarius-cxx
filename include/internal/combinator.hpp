@@ -26,27 +26,43 @@ constexpr expression::Any ANY;
 
 template <std::size_t N>
 constexpr expression::StringLiteral str(const char (&text)[N]) {
+    return unicode_util::isAsciiStr(text, 0, N - 1) ?
+           expression::StringLiteral(text, N - 1) :
+           misc::constexpr_error<expression::StringLiteral>("must be ascii string");
+}
+
+} // namespace ascii
+
+namespace unicode {
+
+constexpr expression::Utf8Any ANY;
+
+template <std::size_t N>
+constexpr expression::StringLiteral str(const char (&text)[N]) {
     return expression::StringLiteral(text, N - 1);
 }
+
+} // namespace unicode
 
 constexpr expression::Char ch(char ch) {
     return ch >= 0 ? expression::Char(ch) :
            misc::constexpr_error<expression::Char>("must be ascii character");
 }
 
-template <size_t N>
-constexpr expression::CharClass set(const char (&text)[N]) {
-    return expression::CharClass(ascii_map::convertToAsciiMap(text, N - 1));
+constexpr expression::Char str(const char (&text)[2]) {
+    return ch(text[0]);
 }
 
-} // inline namespace ascii
+template <size_t N>
+constexpr expression::CharClass set(const char (&text)[N]) {
+    return unicode_util::isAsciiStr(text, 0, N - 1) ?
+           expression::CharClass(unicode_util::convertToAsciiMap(text, N - 1)) :
+           misc::constexpr_error<expression::CharClass>("must be ascii string");
+}
 
-namespace utf8 {
-
-constexpr expression::Utf8Any ANY;
-
-} // namespace utf8
-
+constexpr expression::Char set(const char (&text)[2]) {
+    return ch(text[0]);
+}
 
 constexpr expression::Empty EMPTY;
 

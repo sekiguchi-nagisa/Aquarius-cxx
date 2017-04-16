@@ -26,7 +26,7 @@
 #include "state.hpp"
 #include "misc.hpp"
 #include "tuples.hpp"
-#include "ascii.hpp"
+#include "unicode.hpp"
 
 namespace aquarius {
 namespace expression {
@@ -61,34 +61,7 @@ struct Any : ExprBase<void> {
     }
 };
 
-template <bool B>
-struct Utf8Util {
-    unsigned int utf8ByteSize(unsigned char b) const {
-        static const unsigned char table[256] = {
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-
-                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
-        };
-        return table[b];
-    }
-};
-
-struct Utf8Any : ExprBase<void>, Utf8Util<true> {
+struct Utf8Any : ExprBase<void>, unicode_util::Utf8Util<true> {
     constexpr Utf8Any() { }
 
     template <typename Iterator>
@@ -148,9 +121,9 @@ struct Char : ExprBase<void> {
 };
 
 struct CharClass : ExprBase<void> {
-    ascii_map::AsciiMap asciiMap;
+    unicode_util::AsciiMap asciiMap;
 
-    constexpr explicit CharClass(ascii_map::AsciiMap asciiMap) : asciiMap(asciiMap) { }
+    constexpr explicit CharClass(unicode_util::AsciiMap asciiMap) : asciiMap(asciiMap) { }
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {

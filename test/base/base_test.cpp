@@ -66,7 +66,7 @@ TEST(base, any2) {
     }
     auto state = createState(input.begin(), input.end());
 
-    utf8::ANY(state);
+    unicode::ANY(state);
 
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3u, state.consumedSize()));
@@ -78,7 +78,7 @@ TEST(base, any2) {
     }
     state = createState(input.begin(), input.end());
 
-    utf8::ANY(state);
+    unicode::ANY(state);
 
     ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
