@@ -2,6 +2,20 @@ cmake_minimum_required(VERSION 2.7)
 
 project(Aquarius-cxx)
 
+#+++++++++++++++++++++++++++++++++#
+#     set coverage build type     #
+#+++++++++++++++++++++++++++++++++#
+
+set(SANITIZER "" CACHE STRING "which sanitizer to use")
+
+if(NOT ("${SANITIZER}" STREQUAL ""))
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=${SANITIZER} -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=${SANITIZER} -fno-omit-frame-pointer")
+endif()
+
+set(CMAKE_C_FLAGS_COVERAGE "-g -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_FLAGS_COVERAGE "-g -fprofile-arcs -ftest-coverage")
+
 #+++++++++++++++++++++++++++++#
 #     set compiler option     #
 #+++++++++++++++++++++++++++++#
