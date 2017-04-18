@@ -17,11 +17,9 @@ constexpr bool check_same(P) {
     return true;
 }
 
-
-using namespace aquarius;
-using namespace aquarius::ascii;
-
 TEST(base, any1) {
+    using namespace aquarius;
+    using namespace aquarius::ascii;
 
     check_unit(ANY);
 
@@ -124,6 +122,7 @@ TEST(base, string1) {
 
 TEST(base, string2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = str("abc");
     check_unit(p);
@@ -156,6 +155,39 @@ TEST(base, string2) {
         ASSERT_FALSE(state.result());
         ASSERT_EQ(0u, state.consumedSize());
     });
+}
+
+TEST(base, string3) {
+    using namespace aquarius;
+    using namespace unicode;
+
+    aquarius_pattern_t p = str("あい2う");
+    check_unit(p);
+
+    std::string input("あい2う");
+    auto state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(10u, state.consumedSize()));
+
+    // failed case
+    input = "あい";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.failurePos()));
+
+    // failed case2
+    input = "あい3え";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(6u, state.failurePos()));
 }
 
 TEST(base, charClass1) {
@@ -276,8 +308,32 @@ TEST(base, charClass3) {
     });
 }
 
+TEST(base, charClass4) {
+    using namespace aquarius;
+    using namespace unicode;
+
+    constexpr auto p = ch(U'あ');
+    check_unit(p);
+
+    std::string input("あ");
+    auto state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3u, state.consumedSize()));
+
+    // failed
+    input = "い";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+}
+
 TEST(base, andPredicate) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = ~str("abc");
     check_unit(p);
@@ -304,6 +360,7 @@ TEST(base, andPredicate) {
 
 TEST(base, notPredicate) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = !str("abc");
     check_unit(p);
@@ -330,6 +387,7 @@ TEST(base, notPredicate) {
 
 TEST(base, capture) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[str("hello")];
     check_same<std::string>(p);
@@ -382,6 +440,7 @@ TEST(base, zeroMore1) {
 
 TEST(base, zeroMore2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = *text[ str("ABC ") ];
     check_same<std::vector<std::string>>(p);
@@ -439,6 +498,7 @@ TEST(base, oneMore1) {
 
 TEST(base, oneMore2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = +text[ str("ABC ") ];
     check_same<std::vector<std::string>>(p);
@@ -537,6 +597,7 @@ TEST(base, repeat2) {
 
 TEST(base, option1) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = -str("hello");
     check_unit(p);
@@ -558,6 +619,7 @@ TEST(base, option1) {
 
 TEST(base, option2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = -text[ str("world") ];
     check_same<Optional<std::string>>(p);
@@ -583,6 +645,7 @@ TEST(base, option2) {
 
 TEST(base, seq1) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = str("hello") >> str(" ") >> str("world");
     check_unit(p);
@@ -609,6 +672,7 @@ TEST(base, seq1) {
 
 TEST(base, seq2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("hello") ] >> str(" world");
     check_same<std::string>(p);
@@ -636,6 +700,7 @@ TEST(base, seq2) {
 
 TEST(base, seq3) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = str("hello ") >> text[ str("world") ];
     check_same<std::string>(p);
@@ -663,6 +728,7 @@ TEST(base, seq3) {
 
 TEST(base, seq4) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("hello") ] >> str(" ") >> text[ str("world") ];
     check_same<std::tuple<std::string, std::string>>(p);
@@ -687,6 +753,7 @@ TEST(base, seq4) {
 
 TEST(base, seq5) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("hello") ] >> str(" ") >> text[ str("world") ] >> -text[ str("!!") ];
     check_same<std::tuple<std::string, std::string, Optional<std::string>>>(p);
@@ -723,6 +790,7 @@ TEST(base, seq5) {
 
 TEST(base, seq6) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("hello") ] >> (str(" ") >> text[ str("world") ]) >> text[ str("!!") ];
     check_same<std::tuple<std::string, std::string, std::string>>(p);
@@ -748,6 +816,7 @@ TEST(base, seq6) {
 
 TEST(base, choice) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("world") ] | text[ str("he") >> str("llo") ];
     check_same<std::string>(p);
@@ -787,6 +856,7 @@ struct Sum {
 
 TEST(base, mapper) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("12") ] >> str("+") >> text[ str("18") ] >> map<Sum>();
     check_same<int>(p);
@@ -803,6 +873,7 @@ TEST(base, mapper) {
 
 TEST(base, mapper2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ str("12") ] >> str("+") >> text[ str("18") ] >> map_c<Sum>;
     check_same<int>(p);
@@ -819,6 +890,7 @@ TEST(base, mapper2) {
 
 TEST(base, constructor) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = ANY >> construct<std::string>();
     check_same<std::string>(p);
@@ -834,6 +906,7 @@ TEST(base, constructor) {
 
 TEST(base, constructor2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = ANY >> cons_c<std::string>;
     check_same<std::string>(p);
@@ -849,6 +922,7 @@ TEST(base, constructor2) {
 
 TEST(base, supply) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = ANY >> supply(true);
     check_same<bool>(p);
@@ -862,6 +936,7 @@ TEST(base, supply) {
 
 TEST(base, supplyNull) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = ANY >> supplyNull<int>();
     check_same<std::unique_ptr<int>>(p);
@@ -910,6 +985,7 @@ TEST(base, join_each1) {
 
 TEST(base, join_each2) {
     using namespace aquarius;
+    using namespace ascii;
 
     constexpr auto p = text[ ch('a') ] >> *ch(' ') >> join_each0<StrJoiner>(text[ str("hello") ]);
     check_same<std::string>(p);

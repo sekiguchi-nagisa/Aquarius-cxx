@@ -120,6 +120,26 @@ struct Char : ExprBase<void> {
     }
 };
 
+struct Utf8Char : ExprBase<void>, unicode_util::Utf8Util<true> {
+    char32_t ch;
+
+    constexpr explicit Utf8Char(char32_t ch) : ch(ch) { }
+
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
+        if(state.remainedSize() > 0) {
+            auto pair = this->toCodePoint(state.cursor(), state.end());
+            if(pair.byteSize > 0 && pair.byteSize < 5) {
+                if(static_cast<char32_t>(pair.code) == ch) {
+                    state.cursor() += pair.byteSize;
+                    return;
+                }
+            }
+        }
+        state.reportFailure();
+    }
+};
+
 struct CharClass : ExprBase<void> {
     unicode_util::AsciiMap asciiMap;
 

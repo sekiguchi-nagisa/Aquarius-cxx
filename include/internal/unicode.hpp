@@ -17,6 +17,9 @@
 #ifndef AQUARIUS_CXX_INTERNAL_ASCII_HPP
 #define AQUARIUS_CXX_INTERNAL_ASCII_HPP
 
+#include <utility>
+#include <type_traits>
+
 #include "misc.hpp"
 
 namespace aquarius {
@@ -93,30 +96,80 @@ constexpr AsciiMap convertToAsciiMap(const char *str, size_t size) {
 
 template <bool B>
 struct Utf8Util {
-    unsigned int utf8ByteSize(unsigned char b) const {
-        static const unsigned char table[256] = {
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    struct CodePoint {
+        unsigned int byteSize;
+        int code;
+    };
 
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    unsigned int utf8ByteSize(unsigned char b) const;
 
-                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
-        };
-        return table[b];
+    template <typename Iter>
+    CodePoint toCodePoint(const Iter begin, const Iter end) const {
+        static_assert(std::is_same<typename std::remove_reference<decltype(*begin)>::type, char>::value ||
+                              std::is_same<typename std::remove_reference<decltype(*begin)>::type, unsigned char>::value, "must be char");
+        CodePoint codePoint;
+        codePoint.byteSize = 0;
+        codePoint.code = -1;
+
+        const unsigned int size = end - begin;
+        if(size > 0) {
+            codePoint.byteSize = this->utf8ByteSize(*begin);
+            switch(codePoint.byteSize) {
+            case 1:
+                codePoint.code = *begin;
+                break;
+            case 2:
+                if(size >= 2) {
+                    codePoint.code = (static_cast<unsigned long>(begin[0] & 0x1F) << 6) |
+                                     static_cast<unsigned long>(begin[1] & 0x3F);
+                }
+                break;
+            case 3:
+                if(size >= 3) {
+                    codePoint.code = (static_cast<unsigned long>(begin[0] & 0x0F) << 12) |
+                                     (static_cast<unsigned long>(begin[1] & 0x3F) << 6) |
+                                     static_cast<unsigned long>(begin[2] & 0x3F);
+                }
+                break;
+            case 4:
+                if(size >= 4) {
+                    codePoint.code = (static_cast<unsigned long>(begin[0] & 0x07) << 18) |
+                                     (static_cast<unsigned long>(begin[1] & 0x3F) << 12) |
+                                     (static_cast<unsigned long>(begin[2] & 0x3F) << 6) |
+                                     static_cast<unsigned long>(begin[3] & 0x3F);
+                }
+            default:
+                break;
+            }
+        }
+        return codePoint;
     }
 };
+
+template <bool T>
+unsigned int Utf8Util<T>::utf8ByteSize(unsigned char b) const {
+    const unsigned char table[256] = {
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+            4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    return table[b];
+}
 
 constexpr bool isAsciiStr(const char *str, std::size_t index, std::size_t size) {
     return index == size ? true : str[index] >= 0 && isAsciiStr(str, index + 1, size);

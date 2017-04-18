@@ -42,6 +42,10 @@ constexpr expression::StringLiteral str(const char (&text)[N]) {
     return expression::StringLiteral(text, N - 1);
 }
 
+constexpr expression::Utf8Char ch(char32_t ch) {
+    return expression::Utf8Char(ch);
+}
+
 } // namespace unicode
 
 constexpr expression::Char ch(char ch) {
