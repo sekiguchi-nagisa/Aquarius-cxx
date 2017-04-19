@@ -47,10 +47,6 @@ struct AsciiMap {
                misc::constexpr_error<AsciiMap>("must be ascii character");
     }
 
-    constexpr AsciiMap operator~() const {
-        return AsciiMap(~this->map[0], ~this->map[1]);
-    }
-
     constexpr bool contains(char ch) const {
         return ch < 0 ? false :
                ch < 64 ? this->map[0] & (1L << ch) :
@@ -67,22 +63,15 @@ constexpr bool checkCharRange(char start, char stop) {
 }
 
 constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index, AsciiMap map) {
-            // negate ascii map
-    return index == 0 && str[0] == '^' ? ~convertToAsciiMap(str, size, index + 1, map) :
-
            // terminal
-           index == size ? map :
-
-           // escape '^'
-           str[index] == '\\' && index + 1 < size && str[index + 1] == '^' ?
-                convertToAsciiMap(str, size, index + 2, map + '^') :
+    return index == size ? map :
 
            // escape '-'
            str[index] == '\\' && index + 1 < size && str[index + 1] == '-' ?
                 convertToAsciiMap(str, size, index + 2, map + '-') :
 
            // parse character range
-           index > 0 && str[index - 1] != '^' && str[index] == '-' && index + 1 < size
+           index > 0 && str[index] == '-' && index + 1 < size
            && checkCharRange(str[index - 1], str[index + 1]) ?
                 convertToAsciiMap(str, size, index + 2, makeFromRange(map, str[index - 1], str[index + 1])) :
 

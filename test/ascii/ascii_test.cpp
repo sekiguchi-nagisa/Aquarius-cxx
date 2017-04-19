@@ -121,36 +121,14 @@ TEST(AsciiTest, parse8) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
 }
 
-TEST(AsciiTest, parse9) {
-    constexpr auto map = convertToAsciiMap("^");
-
-    for(unsigned int i = 0; i < 128; i++) {
-        ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(map.contains(static_cast<char>(i))));
-    }
-}
-
-TEST(AsciiTest, parse10) {
-    constexpr auto map = convertToAsciiMap("^-");
-
-    for(unsigned int i = 0; i < 128; i++) {
-        if(i == '-') {
-            ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(map.contains(static_cast<char>(i))));
-        } else {
-            ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(map.contains(static_cast<char>(i))));
-        }
-    }
-}
-
 TEST(AsciiTest, parse11) {
-    constexpr auto map = convertToAsciiMap("^ab");
+    char set[] = {'a', 'c', '^'};
+    auto expect = createMap(set);
 
-    for(unsigned int i = 0; i < 128; i++) {
-        if(i == 'a' || i == 'b') {
-            ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(map.contains(static_cast<char>(i))));
-        } else {
-            ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(map.contains(static_cast<char>(i))));
-        }
-    }
+    constexpr auto map = convertToAsciiMap("^ac");
+
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
 }
 
 TEST(AsciiTest, parse12) {
@@ -173,21 +151,11 @@ TEST(AsciiTest, parse13) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
 }
 
-TEST(AsciiTest, parse14) {
-    char set[] = {'a', 'c', '^'};
-    auto expect = createMap(set);
-
-    constexpr auto map = convertToAsciiMap("\\^ac");
-
-    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
-    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
-}
-
 TEST(AsciiTest, parse15) {
     char set[] = {'^'};
     auto expect = createMap(set);
 
-    constexpr auto map = convertToAsciiMap("\\^");
+    constexpr auto map = convertToAsciiMap("^");
 
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));
