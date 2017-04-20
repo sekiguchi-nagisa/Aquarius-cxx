@@ -82,10 +82,10 @@ TEST(AsciiTest, parse4) {
 }
 
 TEST(AsciiTest, parse5) {
-    char set[] = {'a', 'b', '-'};
+    char set[] = {'[', '^', ']','\\'};
     auto expect = createMap(set);
 
-    constexpr auto map = convertToAsciiMap("a\\-b");
+    constexpr auto map = convertToAsciiMap("[\\-^");    // cannot escape '-'
 
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[0], map.map[0]));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(expect.map[1], map.map[1]));

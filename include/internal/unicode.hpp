@@ -66,10 +66,6 @@ constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index,
            // terminal
     return index == size ? map :
 
-           // escape '-'
-           str[index] == '\\' && index + 1 < size && str[index + 1] == '-' ?
-                convertToAsciiMap(str, size, index + 2, map + '-') :
-
            // parse character range
            index > 0 && str[index] == '-' && index + 1 < size
            && checkCharRange(str[index - 1], str[index + 1]) ?
