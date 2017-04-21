@@ -58,17 +58,12 @@ constexpr AsciiMap makeFromRange(AsciiMap asciiMap, char start, char stop) {
     return start < stop ? makeFromRange(asciiMap + start, start + 1, stop) : asciiMap + start;
 }
 
-constexpr bool checkCharRange(char start, char stop) {
-    return start <= stop ? true : misc::constexpr_error<bool>("start character must be stop character or less");
-}
-
 constexpr AsciiMap convertToAsciiMap(const char *str, size_t size, size_t index, AsciiMap map) {
            // terminal
     return index == size ? map :
 
            // parse character range
-           index > 0 && str[index] == '-' && index + 1 < size
-           && checkCharRange(str[index - 1], str[index + 1]) ?
+           index > 0 && str[index] == '-' && index + 1 < size ?
                 convertToAsciiMap(str, size, index + 2, makeFromRange(map, str[index - 1], str[index + 1])) :
 
            // update ascii map (default case)
@@ -156,8 +151,19 @@ unsigned int Utf8Util<T>::utf8ByteSize(unsigned char b) const {
     return table[b];
 }
 
-constexpr bool isAsciiStr(const char *str, std::size_t index, std::size_t size) {
-    return index == size ? true : str[index] >= 0 && isAsciiStr(str, index + 1, size);
+constexpr bool isAsciiStr(const char *str, std::size_t size, std::size_t index = 0) {
+    return index == size ? true : str[index] >= 0 && isAsciiStr(str, size, index + 1);
+}
+
+constexpr bool checkAsciiCharRangeImpl(char start, char stop) {
+    return start >= 0 && start <= stop;
+}
+
+constexpr bool checkAsciiCharRange(const char *str, std::size_t size, std::size_t index = 0) {
+    return index == size ? true :
+           index > 0 && str[index] == '-' && index + 1 < size ?
+           checkAsciiCharRangeImpl(str[index - 1], str[index + 1]) && checkAsciiCharRange(str, size, index + 2) :
+           checkAsciiCharRange(str, size, index + 1);
 }
 
 } // namespace unicode_util

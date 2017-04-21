@@ -26,7 +26,7 @@ constexpr expression::Any ANY;
 
 template <std::size_t N>
 constexpr expression::StringLiteral str(const char (&text)[N]) {
-    return unicode_util::isAsciiStr(text, 0, N - 1) ?
+    return unicode_util::isAsciiStr(text, N - 1) ?
            expression::StringLiteral(text, N - 1) :
            misc::constexpr_error<expression::StringLiteral>("must be ascii string");
 }
@@ -59,9 +59,13 @@ constexpr expression::Char str(const char (&text)[2]) {
 
 template <size_t N>
 constexpr expression::CharClass set(const char (&text)[N]) {
-    return unicode_util::isAsciiStr(text, 0, N - 1) ?
-           expression::CharClass(unicode_util::convertToAsciiMap(text, N - 1)) :
-           misc::constexpr_error<expression::CharClass>("must be ascii string");
+    return !unicode_util::isAsciiStr(text, N - 1) ?
+           misc::constexpr_error<expression::CharClass>("must be ascii string") :
+
+           !unicode_util::checkAsciiCharRange(text, N - 1) ?
+           misc::constexpr_error<expression::CharClass>("start character must be stop character or less") :
+
+           expression::CharClass(unicode_util::convertToAsciiMap(text, N - 1));
 }
 
 constexpr expression::Char set(const char (&text)[2]) {
