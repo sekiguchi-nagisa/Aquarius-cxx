@@ -155,15 +155,17 @@ constexpr bool isAsciiStr(const char *str, std::size_t size, std::size_t index =
     return index == size ? true : str[index] >= 0 && isAsciiStr(str, size, index + 1);
 }
 
-constexpr bool checkAsciiCharRangeImpl(char start, char stop) {
+template <typename Char>
+constexpr bool checkCharRangeImpl(Char start, Char stop) {
     return start >= 0 && start <= stop;
 }
 
-constexpr bool checkAsciiCharRange(const char *str, std::size_t size, std::size_t index = 0) {
+template <typename Char>
+constexpr bool checkCharRange(const Char *str, std::size_t size, std::size_t index = 0) {
     return index == size ? true :
            index > 0 && str[index] == '-' && index + 1 < size ?
-           checkAsciiCharRangeImpl(str[index - 1], str[index + 1]) && checkAsciiCharRange(str, size, index + 2) :
-           checkAsciiCharRange(str, size, index + 1);
+           checkCharRangeImpl(str[index - 1], str[index + 1]) && checkCharRange(str, size, index + 2) :
+           checkCharRange(str, size, index + 1);
 }
 
 } // namespace unicode_util

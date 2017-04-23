@@ -46,6 +46,17 @@ constexpr expression::Utf8Char ch(char32_t ch) {
     return expression::Utf8Char(ch);
 }
 
+template <std::size_t N>
+constexpr expression::Utf8CharClass set(const char32_t (&text)[N]) {
+    return !unicode_util::checkCharRange(text, N - 1) ?
+           misc::constexpr_error<expression::Utf8CharClass>("start character must be stop character or less") :
+           expression::Utf8CharClass(text, N - 1);
+}
+
+constexpr expression::Utf8Char set(const char32_t (&text)[2]) {
+    return expression::Utf8Char(text[0]);
+}
+
 } // namespace unicode
 
 constexpr expression::Char ch(char ch) {
@@ -62,7 +73,7 @@ constexpr expression::CharClass set(const char (&text)[N]) {
     return !unicode_util::isAsciiStr(text, N - 1) ?
            misc::constexpr_error<expression::CharClass>("must be ascii string") :
 
-           !unicode_util::checkAsciiCharRange(text, N - 1) ?
+           !unicode_util::checkCharRange(text, N - 1) ?
            misc::constexpr_error<expression::CharClass>("start character must be stop character or less") :
 
            expression::CharClass(unicode_util::convertToAsciiMap(text, N - 1));

@@ -331,6 +331,104 @@ TEST(base, charClass4) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
 }
 
+TEST(base, charClass5) {
+    using namespace aquarius;
+    using namespace unicode;
+
+    constexpr auto p = set(U"３");
+    check_unit(p);
+
+    std::string input("３");
+    auto state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3u, state.consumedSize()));
+
+    // failed
+    input = "い";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+}
+
+TEST(base, charClass6) {
+    using namespace aquarius;
+    using namespace unicode;
+
+    constexpr auto p = set(U"4");
+    check_unit(p);
+
+    std::string input("4");
+    auto state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(1u, state.consumedSize()));
+
+    // failed
+    input = "い";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+}
+
+TEST(base, charClass7) {
+    using namespace aquarius;
+    using namespace unicode;
+
+    constexpr auto p = set(U"３う1-5");
+    check_unit(p);
+
+    std::string input("３");
+    auto state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3u, state.consumedSize()));
+
+    input = "う";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(3u, state.consumedSize()));
+
+    input = "5";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(1u, state.consumedSize()));
+
+    input = "1";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(1u, state.consumedSize()));
+
+    input = "2";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(1u, state.consumedSize()));
+
+    // failed
+    input = "け";
+    state = createState(input.begin(), input.end());
+
+    p(state);
+    ASSERT_NO_FATAL_FAILURE(ASSERT_FALSE(state.result()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.consumedSize()));
+    ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(0u, state.failurePos()));
+}
+
 TEST(base, andPredicate) {
     using namespace aquarius;
     using namespace ascii;

@@ -157,6 +157,36 @@ struct CharClass : ExprBase<void> {
     }
 };
 
+struct Utf8CharClass : ExprBase<void>, unicode_util::Utf8Util<true> {
+    const char32_t *text;
+    std::size_t size;
+
+    constexpr Utf8CharClass(const char32_t *text, std::size_t size) : text(text), size(size) { }
+
+    template <typename Iterator>
+    void operator()(ParserState<Iterator> &state) const {
+        if(state.remainedSize() > 0) {
+            auto pair = this->toCodePoint(state.cursor(), state.end());
+            if(pair.byteSize > 0 && pair.byteSize < 5) {
+                char32_t code = static_cast<char32_t>(pair.code);
+                for(unsigned int i = 0; i < this->size; i++) {
+                    if(this->text[i] == U'-' && i > 0 && i + 1 < size) {
+                        if(code > this->text[i - 1] && code <= this->text[i + 1]) {
+                            state.cursor() += pair.byteSize;
+                            return;
+                        }
+                        i++;
+                    } else if(code == this->text[i]) {
+                        state.cursor() += pair.byteSize;
+                        return;
+                    }
+                }
+            }
+        }
+        state.reportFailure();
+    }
+};
+
 template <typename T>
 struct UnaryExpr : Expression {
     static_assert(is_expr<T>::value, "must be Expression");
