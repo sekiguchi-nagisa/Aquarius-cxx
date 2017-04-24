@@ -80,17 +80,23 @@ struct NullSupplier : expression::Mapper {
 };
 
 template <typename T>
+struct Convertible {
+    template <typename U>
+    bool operator()(const U &) const {
+        return std::is_base_of<T, U>::value;
+    }
+};
+
+template <typename T, typename C = Convertible<T>>
 struct Cast : expression::Mapper {
     using retType = std::unique_ptr<T>;
 
     template <typename Iterator, typename U>
     retType operator()(ParserState<Iterator> &state, std::unique_ptr<U> &&value) const {
         static_assert(std::is_base_of<T, U>::value || std::is_base_of<U, T>::value, "must be base type of derived type");
-        if(std::is_base_of<U, T>::value) {
-            if(dynamic_cast<T *>(value.get()) == nullptr) {
-                state.setResult(false);
-                return std::unique_ptr<T>();
-            }
+        if(!C()(*value.get())) {
+            state.setResult(false);
+            return std::unique_ptr<T>();
         }
         return std::unique_ptr<T>(static_cast<T *>(value.release()));
     }
