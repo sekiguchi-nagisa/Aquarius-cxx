@@ -143,6 +143,7 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
+            - g++-6     # for c++14
       env: CXX_BIN=clang++-4.0 DUMMY=c++14
       script:
         - cmake . -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG -DUSE_CXX14=ON
