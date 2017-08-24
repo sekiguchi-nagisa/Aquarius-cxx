@@ -132,7 +132,7 @@ matrix:
             - clang-3.9
       env: CXX_BIN=clang++-3.9
 
-    # clang 3.9 with C++14
+    # clang 4 with C++14
     - os: linux
       dist: trusty
       compiler: clang
@@ -140,11 +140,10 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.9
+            - llvm-toolchain-trusty-4.0
           packages:
-            - clang-3.9
-            - g++-6
-      env: CXX_BIN=clang++-3.9 DUMMY=c++14
+            - clang-4.0
+      env: CXX_BIN=clang++-4.0 DUMMY=c++14
       script:
         - cmake . -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG -DUSE_CXX14=ON
         - make -j2
@@ -162,6 +161,19 @@ matrix:
           packages:
             - clang-4.0
       env: CXX_BIN=clang++-4.0
+
+    # clang 5.0
+    - os: linux
+      dist: trusty
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: CXX_BIN=clang++-5.0
 
 script:
   - cmake . -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG
