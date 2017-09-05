@@ -17,11 +17,15 @@
 #ifndef AQUARIUS_CXX_INTERNAL_STATE_HPP
 #define AQUARIUS_CXX_INTERNAL_STATE_HPP
 
+#include "misc.hpp"
+
 namespace aquarius {
 
 template <typename RandomAccessIterator>
 class ParserState {
 private:
+    static_assert(misc::is_random_access_iter<RandomAccessIterator>::value, "require random access iterator");
+
     RandomAccessIterator begin_;
     RandomAccessIterator end_;
 

@@ -18,6 +18,7 @@
 #define AQUARIUS_CXX_INTERNAL_MISC_HPP
 
 #include <type_traits>
+#include <iterator>
 
 namespace aquarius {
 namespace misc {
@@ -110,6 +111,10 @@ using ret_type_of_func_t = typename func_type_traits<T>::ret_type;
  */
 template <typename T>
 using first_param_type_of_func_t = typename func_type_traits<T>::first_param_type;
+
+template <typename T>
+using is_random_access_iter =
+typename std::is_same<typename std::iterator_traits<T>::iterator_category, std::random_access_iterator_tag>;
 
 
 template <typename T>
