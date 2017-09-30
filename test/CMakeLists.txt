@@ -19,7 +19,7 @@ add_subdirectory(${GTEST_DIR})
 #     setup test in subdirectory     #
 #++++++++++++++++++++++++++++++++++++#
 
-include_directories(${GTEST_DIR}/include)
+include_directories(${GTEST_DIR}/googletest/include)
 
 add_subdirectory(base)
 add_subdirectory(tuple)
