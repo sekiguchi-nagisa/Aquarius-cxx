@@ -128,7 +128,7 @@ protected:
     NonCopyable() = default;
     ~NonCopyable() = default;
 
-private:
+public:
     NonCopyable(const NonCopyable<T> &) = delete;
     NonCopyable<T> &operator=(const NonCopyable<T> &) = delete;
 };

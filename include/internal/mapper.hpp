@@ -29,7 +29,7 @@ struct CommonMapper : expression::Mapper {
 
     template <typename Iterator, typename Value>
     retType operator()(ParserState<Iterator> &, Value &&v) const {
-        return misc::unpackAndApply<Functor>(std::move(v));
+        return misc::unpackAndApply<Functor>(std::forward<Value>(v));
     }
 
     template <typename Iterator>
@@ -45,7 +45,7 @@ struct Constructor : expression::Mapper {
 
     template <typename Iterator, typename Value>
     retType operator()(ParserState<Iterator> &, Value &&v) const {
-        return misc::unpackAndConstruct<T>(std::move(v));
+        return misc::unpackAndConstruct<T>(std::forward<Value>(v));
     }
 
     template <typename Iterator>
@@ -123,13 +123,13 @@ struct JoinerBase : expression::Mapper {
 
 template <typename Functor, typename T>
 struct Joiner : JoinerBase<Functor, T> {
-    constexpr Joiner(T expr) : JoinerBase<Functor, T>(expr) { }
+    constexpr explicit Joiner(T expr) : JoinerBase<Functor, T>(expr) { }
 
     template <typename Iterator, typename Value>
     typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
         auto r = this->expr(state);
         if(state.result()) {
-            misc::unpackAndAppend<Functor>(v, std::move(r));
+            misc::unpackAndAppend<Functor>(v, std::forward<Value>(r));
         }
         return std::move(v);
     }
