@@ -31,11 +31,11 @@ public:
     ParsedResult() = default;
     explicit ParsedResult(T &&value) : value_(std::move(value)) { }
 
-    ParsedResult(ParsedResult &&r) : value_(std::move(r.value_)) { }
+    ParsedResult(ParsedResult &&r) noexcept : value_(std::move(r.value_)) { }
 
     ~ParsedResult() = default;
 
-    ParsedResult<T> &operator=(ParsedResult<T> &&r) {
+    ParsedResult<T> &operator=(ParsedResult<T> &&r) noexcept {
         auto tmp(std::move(r));
         this->swap(tmp);
         return *this;

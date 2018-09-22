@@ -131,7 +131,7 @@ struct Joiner : JoinerBase<Functor, T> {
         if(state.result()) {
             misc::unpackAndAppend<Functor>(v, std::forward<Value>(r));
         }
-        return std::move(v);
+        return std::forward<Value>(v);
     }
 };
 
@@ -168,7 +168,7 @@ struct EachJoiner : JoinerBase<Functor, T> {
         if(index >= Low) {
             state.setResult(true);
         }
-        return std::move(v);
+        return std::forward<Value>(v);
     }
 };
 
