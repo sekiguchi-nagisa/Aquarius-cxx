@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/sekiguchi-nagisa/Aquarius-cxx.svg?branch=master)](https://travis-ci.org/sekiguchi-nagisa/Aquarius-cxx)
 
 # Aquarius-cxx
-a header only compile time parser generator for C++11/14
+a header only compile time parser generator for C++14
 
 ## Tested compiler
-* gcc (4.9, 5, 6, 7)
-* clang (3.5, 3.6, 3.7, 3.8, 3.9, 4, 5)
+* gcc (5, 6, 7)
+* clang (3.6, 3.7, 3.8, 3.9, 4, 5)

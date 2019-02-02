@@ -28,12 +28,12 @@ struct CommonMapper : expression::Mapper {
     static_assert(!std::is_void<retType>::value, "return type of Functor must not be void");
 
     template <typename Iterator, typename Value>
-    retType operator()(ParserState<Iterator> &, Value &&v) const {
+    auto operator()(ParserState<Iterator> &, Value &&v) const {
         return misc::unpackAndApply<Functor>(std::forward<Value>(v));
     }
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &) const {
+    auto operator()(ParserState<Iterator> &) const {
         return misc::unpackAndApply<Functor>();
     }
 };
@@ -44,12 +44,12 @@ struct Constructor : expression::Mapper {
     static_assert(!std::is_void<retType>::value, "must not be void");
 
     template <typename Iterator, typename Value>
-    retType operator()(ParserState<Iterator> &, Value &&v) const {
+    auto operator()(ParserState<Iterator> &, Value &&v) const {
         return misc::unpackAndConstruct<T>(std::forward<Value>(v));
     }
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &) const {
+    auto operator()(ParserState<Iterator> &) const {
         return misc::unpackAndConstruct<T>();
     }
 };
@@ -64,7 +64,7 @@ struct Supplier : expression::Mapper {
     constexpr explicit Supplier(T constant) : constant(constant) { }
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &) const {
+    auto operator()(ParserState<Iterator> &) const {
         return this->constant;
     }
 };
@@ -74,7 +74,7 @@ struct NullSupplier : expression::Mapper {
     using retType = std::unique_ptr<T>;
 
     template <typename Iterator>
-    retType operator()(ParserState<Iterator> &) const {
+    auto operator()(ParserState<Iterator> &) const {
         return std::unique_ptr<T>();
     }
 };
@@ -92,7 +92,7 @@ struct Cast : expression::Mapper {
     using retType = std::unique_ptr<T>;
 
     template <typename Iterator, typename U>
-    retType operator()(ParserState<Iterator> &state, std::unique_ptr<U> &&value) const {
+    auto operator()(ParserState<Iterator> &state, std::unique_ptr<U> &&value) const {
         static_assert(std::is_base_of<T, U>::value || std::is_base_of<U, T>::value, "must be base type of derived type");
         if(!C()(*value.get())) {
             state.setResult(false);
@@ -126,7 +126,7 @@ struct Joiner : JoinerBase<Functor, T> {
     constexpr explicit Joiner(T expr) : JoinerBase<Functor, T>(expr) { }
 
     template <typename Iterator, typename Value>
-    typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
+    auto operator()(ParserState<Iterator> &state, Value &&v) const {
         auto r = this->expr(state);
         if(state.result()) {
             misc::unpackAndAppend<Functor>(v, std::forward<Value>(r));
@@ -145,7 +145,7 @@ struct EachJoiner : JoinerBase<Functor, T> {
     constexpr EachJoiner(T expr, D delim) : JoinerBase<Functor, T>(expr), delim(delim) { }
 
     template <typename Iterator, typename Value>
-    typename JoinerBase<Functor, T>::retType operator()(ParserState<Iterator> &state, Value &&v) const {
+    auto operator()(ParserState<Iterator> &state, Value &&v) const {
         size_t index = 0;
         for(; index < High; index++) {
             // match delimiter

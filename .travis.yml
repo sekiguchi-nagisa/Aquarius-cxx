@@ -2,18 +2,6 @@ language: cpp
 
 matrix:
   include:
-    # gcc 4.9
-    - os: linux
-      dist: trusty
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9
-      env: CXX_BIN=g++-4.9
-
     # gcc 5
     - os: linux
       dist: trusty
@@ -51,35 +39,6 @@ matrix:
           packages:
             - g++-7
       env: CXX_BIN=g++-7
-
-    # gcc 7 with c++14
-    - os: linux
-      dist: trusty
-      sudo: required
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env: CXX_BIN=g++-7
-      script:
-        - cmake . -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG -DUSE_CXX14=ON
-        - make -j2
-        - ctest --output-on-failure
-
-    # clang 3.5
-    - os: linux
-      dist: trusty
-      compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-3.5
-      env: CXX_BIN=clang++-3.5
 
     # clang 3.6
     - os: linux
@@ -131,24 +90,6 @@ matrix:
           packages:
             - clang-3.9
       env: CXX_BIN=clang++-3.9
-
-    # clang 4 with C++14
-    - os: linux
-      dist: trusty
-      compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
-          packages:
-            - clang-4.0
-            - g++-6     # for c++14
-      env: CXX_BIN=clang++-4.0 DUMMY=c++14
-      script:
-        - cmake . -DCMAKE_CXX_COMPILER=$CXX_BIN -DCMAKE_BUILD_TYPE=DEBUG -DUSE_CXX14=ON
-        - make -j2
-        - ctest --output-on-failure
 
     # clang 4.0
     - os: linux

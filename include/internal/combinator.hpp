@@ -25,7 +25,7 @@ namespace ascii {
 constexpr expression::Any ANY;
 
 template <std::size_t N>
-constexpr expression::StringLiteral str(const char (&text)[N]) {
+constexpr auto str(const char (&text)[N]) {
     return unicode_util::isAsciiStr(text, N - 1) ?
            expression::StringLiteral(text, N - 1) :
            misc::constexpr_error<expression::StringLiteral>("must be ascii string");
@@ -38,38 +38,38 @@ namespace unicode {
 constexpr expression::Utf8Any ANY;
 
 template <std::size_t N>
-constexpr expression::StringLiteral str(const char (&text)[N]) {
+constexpr auto str(const char (&text)[N]) {
     return expression::StringLiteral(text, N - 1);
 }
 
-constexpr expression::Utf8Char ch(char32_t ch) {
+constexpr auto ch(char32_t ch) {
     return expression::Utf8Char(ch);
 }
 
 template <std::size_t N>
-constexpr expression::Utf8CharClass set(const char32_t (&text)[N]) {
+constexpr auto set(const char32_t (&text)[N]) {
     return !unicode_util::checkCharRange(text, N - 1) ?
            misc::constexpr_error<expression::Utf8CharClass>("start character must be stop character or less") :
            expression::Utf8CharClass(text, N - 1);
 }
 
-constexpr expression::Utf8Char set(const char32_t (&text)[2]) {
+constexpr auto set(const char32_t (&text)[2]) {
     return expression::Utf8Char(text[0]);
 }
 
 } // namespace unicode
 
-constexpr expression::Char ch(char ch) {
+constexpr auto ch(char ch) {
     return ch >= 0 ? expression::Char(ch) :
            misc::constexpr_error<expression::Char>("must be ascii character");
 }
 
-constexpr expression::Char str(const char (&text)[2]) {
+constexpr auto str(const char (&text)[2]) {
     return ch(text[0]);
 }
 
 template <size_t N>
-constexpr expression::CharClass set(const char (&text)[N]) {
+constexpr auto set(const char (&text)[N]) {
     return !unicode_util::isAsciiStr(text, N - 1) ?
            misc::constexpr_error<expression::CharClass>("must be ascii string") :
 
@@ -79,7 +79,7 @@ constexpr expression::CharClass set(const char (&text)[N]) {
            expression::CharClass(unicode_util::convertToAsciiMap(text, N - 1));
 }
 
-constexpr expression::Char set(const char (&text)[2]) {
+constexpr auto set(const char (&text)[2]) {
     return ch(text[0]);
 }
 
@@ -88,116 +88,113 @@ constexpr expression::Empty EMPTY;
 constexpr expression::CaptureHolder text;
 
 template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T, typename D>
-constexpr auto repeat(T expr, D delim) -> decltype(expression::repeatHelper<Low, High>(expr, delim)) {
+constexpr auto repeat(T expr, D delim) {
     return expression::repeatHelper<Low, High>(expr, delim);
 }
 
 template <size_t Low = 0, size_t High = static_cast<size_t>(-1), typename T>
-constexpr auto repeat(T expr) -> decltype(repeat<Low, High>(expr, expression::Empty())) {
+constexpr auto repeat(T expr) {
     return repeat<Low, High>(expr, expression::Empty());
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
-constexpr auto operator*(T expr) -> decltype(repeat(expr)) {
+constexpr auto operator*(T expr) {
     return repeat(expr);
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
-constexpr auto operator+(T expr) -> decltype(repeat<1>(expr)) {
+constexpr auto operator+(T expr) {
     return repeat<1>(expr);
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
-constexpr auto operator-(T expr) -> decltype(expression::optionHelper(expr)) {
+constexpr auto operator-(T expr) {
     return expression::optionHelper(expr);
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
-constexpr expression::NotPredicate<T> operator!(T expr) {
+constexpr auto operator!(T expr) {
     return expression::NotPredicate<T>(expr);
 }
 
 template <typename T, misc::enable_when<expression::is_expr<T>::value> = nullptr>
-constexpr expression::NotPredicate<expression::NotPredicate<T>> operator~(T expr) {
+constexpr auto operator~(T expr) {
     return !(!expr);
 }
 
 template <typename L, typename R,
         misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = nullptr>
-constexpr auto operator>>(L left, R right) -> decltype(expression::seqHelper(left, right)) {
+constexpr auto operator>>(L left, R right) {
     return expression::seqHelper(left, right);
 }
 
 template <typename L, typename R,
         misc::enable_when<expression::is_expr<L>::value && expression::is_expr<R>::value> = nullptr>
-constexpr auto operator|(L left, R right) -> decltype(expression::choiceHelper(left, right)) {
+constexpr auto operator|(L left, R right) {
     return expression::choiceHelper(left, right);
 }
 
 template <typename T>
-constexpr expression::NonTerminal<T> nterm() {
+constexpr auto nterm() {
     return expression::NonTerminal<T>();
 }
 
 template <typename T, typename M,
         misc::enable_when<expression::is_expr<T>::value &&
                           expression::is_mapper<M>::value> = nullptr>
-constexpr expression::MapperAdapter<T, M> operator>>(T expr, M mapper) {
+constexpr auto operator>>(T expr, M mapper) {
     return expression::MapperAdapter<T, M>(expr, mapper);
 }
 
 template <typename F>
-constexpr mapper::CommonMapper<F> map() {
+constexpr auto map() {
     return mapper::CommonMapper<F>();
 }
 
 template <typename T>
-constexpr mapper::Constructor<T> construct() {
+constexpr auto construct() {
     return mapper::Constructor<T>();
 }
 
 template <typename T>
-constexpr mapper::Supplier<T> supply(T t) {
+constexpr auto supply(T t) {
     return mapper::Supplier<T>(t);
 }
 
 template <typename T>
-constexpr mapper::NullSupplier<T> supplyNull() {
+constexpr auto supplyNull() {
     return mapper::NullSupplier<T>();
 }
 
 template <typename T>
-constexpr mapper::Cast<T> cast() {
+constexpr auto cast() {
     return mapper::Cast<T>();
 }
 
 template <typename F, typename T>
-constexpr mapper::Joiner<F, T> join(T expr) {
+constexpr auto join(T expr) {
     return mapper::Joiner<F, T>(expr);
 }
 
 template <typename F, size_t Low = 0, size_t High = static_cast<size_t >(-1), typename T, typename D>
-constexpr mapper::EachJoiner<F, T, D, Low, High> join_each(T expr, D delim) {
+constexpr auto join_each(T expr, D delim) {
     return mapper::EachJoiner<F, T, D, Low, High>(expr, delim);
 }
 
 template <typename F, size_t Low = 0, size_t High = static_cast<size_t >(-1), typename T>
-constexpr auto join_each(T expr) -> decltype(join_each<F, Low, High>(expr, expression::Empty())) {
+constexpr auto join_each(T expr) {
     return join_each<F, Low, High>(expr, expression::Empty());
 }
 
 template <typename F, typename T, typename D>
-constexpr auto join_each0(T expr, D delim) -> decltype(join_each<F>(expr, delim)) {
+constexpr auto join_each0(T expr, D delim) {
     return join_each<F>(expr, delim);
 }
 
 template <typename F, typename T>
-constexpr auto join_each0(T expr) -> decltype(join_each0<F>(expr, expression::Empty())) {
+constexpr auto join_each0(T expr) {
     return join_each0<F>(expr, expression::Empty());
 }
-
-// define C++14 specific operator
-#if (__cplusplus >= 201402L)
 
 template <typename T>
 constexpr auto nterm_c = expression::NonTerminal<T>();
@@ -210,8 +207,6 @@ constexpr auto cons_c = mapper::Constructor<T>();
 
 template <typename T>
 constexpr auto cast_c = mapper::Cast<T>();
-
-#endif
 
 } // namespace aquarius
 

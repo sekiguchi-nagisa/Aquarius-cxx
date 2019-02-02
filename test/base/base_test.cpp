@@ -967,8 +967,6 @@ TEST(base, mapper) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
 }
 
-#if (__cplusplus >= 201402L)
-
 TEST(base, mapper2) {
     using namespace aquarius;
     using namespace ascii;
@@ -984,8 +982,6 @@ TEST(base, mapper2) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(30, r));
 }
 
-#endif
-
 TEST(base, constructor) {
     using namespace aquarius;
     using namespace ascii;
@@ -1000,8 +996,6 @@ TEST(base, constructor) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r.empty()));
 }
 
-#if (__cplusplus >= 201402L)
-
 TEST(base, constructor2) {
     using namespace aquarius;
     using namespace ascii;
@@ -1015,8 +1009,6 @@ TEST(base, constructor2) {
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(r.empty()));
 }
-
-#endif
 
 TEST(base, supply) {
     using namespace aquarius;
