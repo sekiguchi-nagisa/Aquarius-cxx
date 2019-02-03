@@ -29,7 +29,6 @@
 template <typename T> \
 struct name ## __impl { \
     using name = name ## __impl<R>;\
-    static_assert(std::is_same<T, std::remove_reference<decltype(p)>::type::retType>::value, "must be same type");\
     static constexpr auto pattern() -> std::remove_reference<decltype(p)>::type { return p; }\
 }; using name = name ## __impl<R>
 
