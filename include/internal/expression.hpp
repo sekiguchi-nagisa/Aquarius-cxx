@@ -627,14 +627,14 @@ struct NonTerminal : Expression {
     template <typename Iterator, typename P = retType,
             misc::enable_when<!std::is_void<P>::value> = nullptr>
     auto operator()(ParserState<Iterator> &state) const {
-        constexpr auto p = T::pattern;
+        constexpr auto p = T::pattern();
         return p(state);
     }
 
     template <typename Iterator, typename P = retType,
             misc::enable_when<std::is_void<P>::value> = nullptr>
     void operator()(ParserState<Iterator> &state) const {
-        constexpr auto p = T::pattern;
+        constexpr auto p = T::pattern();
         p(state);
     }
 };

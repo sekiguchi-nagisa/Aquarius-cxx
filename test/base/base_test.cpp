@@ -1110,7 +1110,7 @@ TEST(base, nterm1) {
     std::string line("  \t \n ");
     auto state = createState(line.begin(), line.end());
 
-    SPACE::pattern(state);
+    SPACE::pattern()(state);
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(state.result()));
     ASSERT_NO_FATAL_FAILURE(ASSERT_EQ(6, state.cursor() - state.begin()));
 
