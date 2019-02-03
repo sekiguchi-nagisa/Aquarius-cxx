@@ -29,7 +29,7 @@
 template <typename T> \
 struct name ## __impl { \
     using name = name ## __impl<R>;\
-    static constexpr auto pattern() { return p; }\
+    static constexpr auto pattern = p;\
 }; using name = name ## __impl<R>
 
 #define AQUARIUS_DECL_RULE(R, name) \

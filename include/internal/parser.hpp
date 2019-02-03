@@ -83,7 +83,7 @@ struct Parser {
     template <typename RandomAccessIterator, typename P = retType,
             misc::enable_when<std::is_void<P>::value> = nullptr>
     ParsedResult<void> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-        constexpr auto p = RULE::pattern();
+        constexpr auto p = RULE::pattern;
 
         ParsedResult<void> r;
         auto state = createState(begin, end);
@@ -97,7 +97,7 @@ struct Parser {
     template <typename RandomAccessIterator, typename P = retType,
             misc::enable_when<!std::is_void<P>::value> = nullptr>
     ParsedResult<retType> operator()(RandomAccessIterator begin, RandomAccessIterator end) const {
-        constexpr auto p = RULE::pattern();
+        constexpr auto p = RULE::pattern;
 
         ParsedResult<retType> r;
         auto state = createState(begin, end);
