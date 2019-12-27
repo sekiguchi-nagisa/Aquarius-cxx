@@ -144,7 +144,7 @@ public:
         *this->value_ = std::move(t);
     }
 
-    Optional(Optional &&o) : value_(o.value_) {
+    Optional(Optional &&o) noexcept : value_(o.value_) {
         o.value_ = nullptr;
     }
 
@@ -152,7 +152,7 @@ public:
         delete this->value_;
     }
 
-    Optional &operator=(Optional &&o) {
+    Optional &operator=(Optional &&o) noexcept {
         auto tmp(std::move(o));
         this->swap(tmp);
         return *this;

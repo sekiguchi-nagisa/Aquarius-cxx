@@ -48,11 +48,11 @@ public:
     ParserState(RandomAccessIterator begin, RandomAccessIterator end) :
             begin_(begin), end_(end), cursor_(begin), result_(true), failure_(begin) { }
 
-    const RandomAccessIterator begin() const {
+    RandomAccessIterator begin() const {
         return this->begin_;
     }
 
-    const RandomAccessIterator end() const {
+    RandomAccessIterator end() const {
         return this->end_;
     }
 

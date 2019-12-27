@@ -38,22 +38,22 @@ struct is_tuple : is_specialization_of<typename std::remove_reference<
  */
 template <typename L, typename R, enable_when<!is_tuple<L>::value && !is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) {
-    return std::make_tuple(std::move(l), std::move(r));
+    return std::make_tuple(std::forward<L>(l), std::forward<R>(r));
 }
 
 template <typename L, typename R, enable_when<is_tuple<L>::value && !is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) {
-    return std::tuple_cat(std::move(l), std::make_tuple(std::move(r)));
+    return std::tuple_cat(std::forward<L>(l), std::make_tuple(std::forward<R>(r)));
 }
 
 template <typename L, typename R, enable_when<!is_tuple<L>::value && is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) {
-    return std::tuple_cat(std::make_tuple(std::move(l)), std::move(r));
+    return std::tuple_cat(std::make_tuple(std::forward<L>(l)), std::forward<R>(r));
 }
 
 template <typename L, typename R, enable_when<is_tuple<L>::value && is_tuple<R>::value> = nullptr>
 inline auto catAsTuple(L &&l, R &&r) {
-    return std::tuple_cat(std::move(l), std::move(r));
+    return std::tuple_cat(std::forward<L>(l), std::forward<R>(r));
 }
 
 

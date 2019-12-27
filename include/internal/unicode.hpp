@@ -38,7 +38,7 @@ struct AsciiMap {
     constexpr AsciiMap(std::uint64_t upper, std::uint64_t lower) : map{upper, lower} { }
 
     constexpr AsciiMap operator+(AsciiMap asciiMap) const {
-        return AsciiMap(this->map[0] | asciiMap.map[0], this->map[1] | asciiMap.map[1]);
+        return {this->map[0] | asciiMap.map[0], this->map[1] | asciiMap.map[1]};
     }
 
     constexpr AsciiMap operator+(char ch) const {
