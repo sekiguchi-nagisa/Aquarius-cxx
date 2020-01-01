@@ -42,14 +42,14 @@ struct ExprBase : Expression {
 };
 
 struct Empty : ExprBase<void> {
-    constexpr Empty() = default;
+    constexpr Empty() {}
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &) const { }
 };
 
 struct Any : ExprBase<void> {
-    constexpr Any() = default;
+    constexpr Any() {}
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {
@@ -62,7 +62,7 @@ struct Any : ExprBase<void> {
 };
 
 struct Utf8Any : ExprBase<void>, unicode_util::Utf8Util<true> {
-    constexpr Utf8Any() = default;
+    constexpr Utf8Any() {}
 
     template <typename Iterator>
     void operator()(ParserState<Iterator> &state) const {
@@ -408,7 +408,7 @@ struct Capture : ExprBase<std::string> {
 };
 
 struct CaptureHolder {
-    constexpr CaptureHolder() = default;
+    constexpr CaptureHolder() {}
 
     template <typename T>
     constexpr Capture<T> operator[](T expr) const {
@@ -620,7 +620,7 @@ template <typename T>
 struct NonTerminal : Expression {
     using retType = misc::param_type_of_t<T>;
 
-    constexpr NonTerminal() = default;
+    constexpr NonTerminal() {}
 
     template <typename Iterator, typename P = retType,
             misc::enable_when<!std::is_void<P>::value> = nullptr>
