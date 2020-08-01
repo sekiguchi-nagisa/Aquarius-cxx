@@ -293,7 +293,7 @@ struct Repeat : RepeatBase<T, D, Low, High> {
         if(index >= Low) {
             state.setResult(true);
         }
-        return std::move(value);
+        return value;
     }
 };
 
