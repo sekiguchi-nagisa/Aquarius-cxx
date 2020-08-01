@@ -1093,13 +1093,19 @@ namespace top {
 
 using namespace aquarius;
 
-AQUARIUS_DECL_RULE(void, S);
+AQ_DECL_RULE(S, void);
 
-AQUARIUS_DEFINE_RULE(void, SPACE, *nterm<S>());
+AQ_DEFINE_RULE(SPACE, void) {
+    return *nterm<S>();
+}
 
-AQUARIUS_DEFINE_RULE(void, S, set(" \t\n\r"));
+AQ_DEFINE_RULE(S, void) {
+    return set(" \t\n\r");
+}
 
-AQUARIUS_DEFINE_RULE(void, Rep, ch('b') | ch('a') >> nterm<Rep>());
+AQ_DEFINE_RULE(Rep, void) {
+    return ch('b') | ch('a') >> nterm<Rep>();
+}
 
 }
 

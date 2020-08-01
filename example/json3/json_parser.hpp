@@ -63,38 +63,34 @@ constexpr auto exp = set("eE") >> -set("+-") >> integer;
 constexpr auto number = text[ -ch('-') >> integer >> ch('.') >> +set("0-9") >> -exp
                         | -ch('-') >> integer ] >> map<ToNumber>();
 
-AQUARIUS_DECL_RULE(JSON, object);
-AQUARIUS_DECL_RULE(JSON, array);
+AQ_DECL_RULE(object, JSON);
+AQ_DECL_RULE(array, JSON);
 
-AQUARIUS_DEFINE_RULE(
-        JSON, value,
-        (string >> construct<JSON>()
-         | number
-         | nterm<object>()
-         | nterm<array>()
-         | str("true") >> supply(true) >> construct<JSON>()
-         | str("false") >> supply(false) >> construct<JSON>()
-         | str("null") >> construct<JSON>()
-        ) >> space
-);
+AQ_DEFINE_RULE(value, JSON) {
+    return (string >> construct<JSON>()
+            | number
+            | nterm<object>()
+            | nterm<array>()
+            | str("true") >> supply(true) >> construct<JSON>()
+            | str("false") >> supply(false) >> construct<JSON>()
+            | str("null") >> construct<JSON>()
+            ) >> space;
+}
 
 constexpr auto keyValue = string >> kvSep >> nterm<value>() >> space;
 
-AQUARIUS_DEFINE_RULE(
-        JSON, array,
-        arrayOpen >> repeat<0>(nterm<value>(), vSep) >> arrayClose >> construct<JSON>()
-);
+AQ_DEFINE_RULE(array, JSON) {
+    return arrayOpen >> repeat<0>(nterm<value>(), vSep) >> arrayClose >> construct<JSON>();
+}
 
-AQUARIUS_DEFINE_RULE(
-        JSON, object,
-        objectOpen >> map<NewObject>()
-                   >> join_each0<AppendToMap>(keyValue, vSep) >> objectClose >> construct<JSON>()
-);
+AQ_DEFINE_RULE(object, JSON) {
+    return objectOpen >> map<NewObject>()
+            >> join_each0<AppendToMap>(keyValue, vSep) >> objectClose >> construct<JSON>();
+}
 
-AQUARIUS_DEFINE_RULE(
-        JSON, json,
-        space >> (nterm<object>() | nterm<array>())
-);
+AQ_DEFINE_RULE(json, JSON) {
+    return space >> (nterm<object>() | nterm<array>());
+}
 
 } // namespace json
 

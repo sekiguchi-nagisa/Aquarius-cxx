@@ -43,33 +43,28 @@ constexpr auto exp = set("eE") >> -set("+-") >> integer;
 constexpr auto number = -ch('-') >> integer >> ch('.') >> +set("0-9") >> -exp
                         | -ch('-') >> integer;
 
-AQUARIUS_DECL_RULE(void, object);
-AQUARIUS_DECL_RULE(void, array);
+AQ_DECL_RULE(object, void);
+AQ_DECL_RULE(array, void);
 
-AQUARIUS_DEFINE_RULE(
-        void, value,
-        (string | number | nterm<object>() | nterm<array>() | str("true") | str("false") | str("null")) >> space
-);
+AQ_DEFINE_RULE(value, void) {
+    return (string | number | nterm<object>() | nterm<array>() | str("true") | str("false") | str("null")) >> space;
+}
 
-AQUARIUS_DEFINE_RULE(
-        void, keyValue,
-        string >> kvSep >> nterm<value>() >> space
-);
+AQ_DEFINE_RULE(keyValue, void) {
+    return string >> kvSep >> nterm<value>() >> space;
+}
 
-AQUARIUS_DEFINE_RULE(
-        void, array,
-        arrayOpen >> -(nterm<value>() >> *(vSep >> nterm<value>())) >> arrayClose
-);
+AQ_DEFINE_RULE(array, void) {
+    return arrayOpen >> -(nterm<value>() >> *(vSep >> nterm<value>())) >> arrayClose;
+}
 
-AQUARIUS_DEFINE_RULE(
-        void, object,
-        objectOpen >> -(nterm<keyValue>() >> *(vSep >> nterm<keyValue>())) >> objectClose
-);
+AQ_DEFINE_RULE(object, void) {
+    return objectOpen >> -(nterm<keyValue>() >> *(vSep >> nterm<keyValue>())) >> objectClose;
+}
 
-AQUARIUS_DEFINE_RULE(
-        void, json,
-        space >> (nterm<object>() | nterm<array>())
-);
+AQ_DEFINE_RULE(json, void) {
+    return space >> (nterm<object>() | nterm<array>());
+}
 
 } // namespace json
 

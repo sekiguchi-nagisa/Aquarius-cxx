@@ -25,15 +25,15 @@
 // helper macro
 #define aquarius_pattern_t constexpr auto
 
-#define AQUARIUS_DEFINE_RULE(R, name, p) \
-template <typename T> \
-struct name ## __impl { \
-    using name = name ## __impl<R>;\
-    static constexpr auto pattern() { return p; }\
-}; using name = name ## __impl<R>
+#define AQ_DEFINE_RULE(name, ...) \
+template <typename T>             \
+struct name ## __impl {           \
+    static constexpr auto pattern();                                  \
+}; using name = name ## __impl<__VA_ARGS__>;  \
+template<typename T> constexpr auto name ## __impl<T>::pattern()
 
-#define AQUARIUS_DECL_RULE(R, name) \
-template <typename T> struct name ## __impl; using name = name ## __impl<R>
-
+#define AQ_DECL_RULE(name, ...) \
+template <typename T> struct name ## __impl; \
+using name = name ## __impl<__VA_ARGS__>
 
 #endif //AQUARIUS_CXX_AQUARIUS_HPP

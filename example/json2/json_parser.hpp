@@ -67,39 +67,35 @@ constexpr auto exp = set("eE") >> -set("+-") >> integer;
 constexpr auto number = text[ -ch('-') >> integer >> ch('.') >> +set("0-9") >> -exp
                                 | -ch('-') >> integer ] >> map<ToNumber>();
 
-AQUARIUS_DECL_RULE(std::unique_ptr<JSONObject>, object);
-AQUARIUS_DECL_RULE(std::unique_ptr<JSONArray>, array);
+AQ_DECL_RULE(object, std::unique_ptr<JSONObject>);
+AQ_DECL_RULE(array, std::unique_ptr<JSONArray>);
 
-AQUARIUS_DEFINE_RULE(
-        std::unique_ptr<JSON>, value,
-        (string >> cast<JSON>()
-         | number
-         | nterm<object>()
-         | nterm<array>()
-         | str("true") >> supply(true) >> construct<JSONBool *>()
-         | str("false") >> supply(false) >> construct<JSONBool *>()
-         | str("null") >> construct<JSONNull *>()
-        ) >> space
-);
+AQ_DEFINE_RULE(value, std::unique_ptr<JSON>) {
+    return (string >> cast<JSON>()
+            | number
+            | nterm<object>()
+            | nterm<array>()
+            | str("true") >> supply(true) >> construct<JSONBool *>()
+            | str("false") >> supply(false) >> construct<JSONBool *>()
+            | str("null") >> construct<JSONNull *>()
+            ) >> space;
+}
 
 constexpr auto keyValue = string >> kvSep >> nterm<value>() >> space;
 
-AQUARIUS_DEFINE_RULE(
-        std::unique_ptr<JSONArray>, array,
-        arrayOpen >> construct<JSONArray *>() >>
-                join_each0<AppendToArray>(nterm<value>(), vSep) >> arrayClose
-);
+AQ_DEFINE_RULE(array, std::unique_ptr<JSONArray>) {
+    return arrayOpen >> construct<JSONArray *>() >>
+              join_each0<AppendToArray>(nterm<value>(), vSep) >> arrayClose;
+}
 
-AQUARIUS_DEFINE_RULE(
-        std::unique_ptr<JSONObject>, object,
-        objectOpen >> construct<JSONObject *>() >>
-                join_each0<AppendToObject>(keyValue, vSep) >> objectClose
-);
+AQ_DEFINE_RULE(object, std::unique_ptr<JSONObject>) {
+    return objectOpen >> construct<JSONObject *>() >>
+               join_each0<AppendToObject>(keyValue, vSep) >> objectClose;
+}
 
-AQUARIUS_DEFINE_RULE(
-        std::unique_ptr<JSON>, json,
-        space >> (nterm<object>() >> cast<JSON>() | nterm<array>())
-);
+AQ_DEFINE_RULE(json, std::unique_ptr<JSON>) {
+    return space >> (nterm<object>() >> cast<JSON>() | nterm<array>());
+}
 
 } // namespace json
 
