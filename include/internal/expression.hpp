@@ -166,7 +166,7 @@ struct Utf8CharClass : ExprBase<void>, unicode_util::Utf8Util<true> {
         if(state.remainedSize() > 0) {
             auto pair = this->toCodePoint(state.cursor(), state.end());
             if(pair.byteSize > 0 && pair.byteSize < 5) {
-                char32_t code = static_cast<char32_t>(pair.code);
+                auto code = static_cast<char32_t>(pair.code);
                 for(unsigned int i = 0; i < this->size; i++) {
                     if(this->text[i] == U'-' && i > 0 && i + 1 < size) {
                         if(code > this->text[i - 1] && code <= this->text[i + 1]) {
