@@ -97,17 +97,17 @@ private:
 
 public:
     JSON() : kind(NIL), nil(nullptr) {}
-    JSON(double num) : kind(NUMBER), num(num) {}
-    JSON(bool b) : kind(BOOL), b(b) {}
-    JSON(std::string &&str) : kind(STRING), str(std::move(str)) {}
-    JSON(array_type &&array) : kind(ARRAY), array(std::move(array)) {}
-    JSON(map_type &&map) : kind(OBJECT), map(std::move(map)) {}
+    JSON(double num) : kind(NUMBER), num(num) {}    //NOLINT
+    JSON(bool b) : kind(BOOL), b(b) {}  //NOLINT
+    JSON(std::string &&str) : kind(STRING), str(std::move(str)) {}  //NOLINT
+    JSON(array_type &&array) : kind(ARRAY), array(std::move(array)) {}  //NOLINT
+    JSON(map_type &&map) : kind(OBJECT), map(std::move(map)) {} //NOLINT
 
-    JSON(JSON &&json) { this->assign(std::move(json)); }
+    JSON(JSON &&json) noexcept { this->assign(std::move(json)); }
 
     ~JSON() { this->clear(); }
 
-    JSON &operator=(JSON &&json) {
+    JSON &operator=(JSON &&json) noexcept {
         this->clear();
         this->assign(std::move(json));
         return *this;

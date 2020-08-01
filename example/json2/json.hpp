@@ -39,7 +39,7 @@ private:
     JSONKind kind_;
 
 protected:
-    JSON(JSONKind kind) : kind_(kind) { }
+    explicit JSON(JSONKind kind) : kind_(kind) { }
 
 public:
     virtual ~JSON() = default;
@@ -56,7 +56,7 @@ public:
 class JSONNull : public JSON {
 public:
     JSONNull() : JSON(JSONKind::NIL) {}
-    ~JSONNull() = default;
+    ~JSONNull() override = default;
 };
 
 class JSONBool : public JSON {
@@ -66,7 +66,7 @@ private:
 public:
     JSONBool(bool value) : JSON(JSONKind::BOOL), value_(value) { }
 
-    ~JSONBool() = default;
+    ~JSONBool() override = default;
 
     bool value() const {
         return this->value_;
@@ -81,7 +81,7 @@ public:
     JSONString(std::string &&value) :
             JSON(JSONKind::STRING), value_(std::move(value)) { }
 
-    ~JSONString() = default;
+    ~JSONString() override = default;
 
     const std::string &value() const {
         return this->value_;
@@ -96,7 +96,7 @@ public:
     JSONNumber(double value) :
             JSON(JSONKind::NUMBER), value_(value) { }
 
-    ~JSONNumber() = default;
+    ~JSONNumber() override = default;
 
     double value() const {
         return this->value_;
@@ -110,7 +110,7 @@ private:
 public:
     JSONArray() : JSON(JSONKind::ARRAY), values_() { }
 
-    ~JSONArray() = default;
+    ~JSONArray() override = default;
 
     std::vector<std::unique_ptr<JSON>> &value() {
         return this->values_;
@@ -148,7 +148,7 @@ private:
 public:
     JSONObject() : JSON(JSONKind::OBJECT), values_() { }
 
-    ~JSONObject() = default;
+    ~JSONObject() override = default;
 
     map_type &value() {
         return this->values_;
