@@ -64,7 +64,7 @@ private:
     bool value_;
 
 public:
-    JSONBool(bool value) : JSON(JSONKind::BOOL), value_(value) { }
+    JSONBool(bool value) : JSON(JSONKind::BOOL), value_(value) { }  //NOLINT
 
     ~JSONBool() override = default;
 
@@ -78,7 +78,7 @@ private:
     std::string value_;
 
 public:
-    JSONString(std::string &&value) :
+    JSONString(std::string &&value) :   //NOLINT
             JSON(JSONKind::STRING), value_(std::move(value)) { }
 
     ~JSONString() override = default;
@@ -93,7 +93,7 @@ private:
     double value_;
 
 public:
-    JSONNumber(double value) :
+    JSONNumber(double value) :  //NOLINT
             JSON(JSONKind::NUMBER), value_(value) { }
 
     ~JSONNumber() override = default;
