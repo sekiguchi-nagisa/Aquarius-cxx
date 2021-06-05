@@ -144,6 +144,10 @@ struct EachJoiner : JoinerBase<Functor, T> {
 
     constexpr EachJoiner(T expr, D delim) : JoinerBase<Functor, T>(expr), delim(delim) { }
 
+    static bool isGreaterThan(size_t index, size_t limit) {
+        return index >= limit;
+    }
+
     template <typename Iterator, typename Value>
     auto operator()(ParserState<Iterator> &state, Value &&v) const {
         size_t index = 0;
@@ -165,7 +169,7 @@ struct EachJoiner : JoinerBase<Functor, T> {
             misc::unpackAndAppend<Functor>(v, std::move(r));
         }
 
-        if(index >= Low) {
+        if(isGreaterThan(index, Low)) {
             state.setResult(true);
         }
         return std::forward<Value>(v);
