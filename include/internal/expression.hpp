@@ -201,6 +201,16 @@ struct RepeatBaseCommon : UnaryExpr<T> {
     static_assert(Low < High, "invalid interval");
 
     constexpr explicit RepeatBaseCommon(T expr) : UnaryExpr<T>(expr) {}
+
+    /**
+     * workaround for latest gcc (10 or later)
+     * @param index
+     * @param limit
+     * @return
+     */
+    bool isGreaterThan(size_t index, size_t limit) const {
+        return index >= limit;
+    }
 };
 
 template <typename T, typename D, size_t Low, size_t High>
@@ -253,7 +263,7 @@ struct RepeatVoid : RepeatBase<T, D, Low, High> {
             }
         }
 
-        if(index >= Low) {
+        if(this->isGreaterThan(index, Low)) {
             state.setResult(true);
         }
     }
@@ -290,7 +300,7 @@ struct Repeat : RepeatBase<T, D, Low, High> {
             value.push_back(std::move(v));
         }
 
-        if(index >= Low) {
+        if(this->isGreaterThan(index, Low)) {
             state.setResult(true);
         }
         return value;
