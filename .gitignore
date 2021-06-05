@@ -6,7 +6,6 @@ Release/
 .idea/
 cmake-build-debug/
 build/
-test/google*
 
 # Compiled Object files
 *.slo

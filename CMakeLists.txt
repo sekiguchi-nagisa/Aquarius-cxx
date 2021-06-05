@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.7)
 
 project(Aquarius-cxx)
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+include(DownloadProject)
+
+
 #+++++++++++++++++++++++++++++++++#
 #     set coverage build type     #
 #+++++++++++++++++++++++++++++++++#

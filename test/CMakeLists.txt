@@ -2,24 +2,26 @@
 #     build gtest     #
 #+++++++++++++++++++++#
 
-set(GTEST_V "1.10.0")
-set(GTEST_URL "https://github.com/google/googletest/archive/release-${GTEST_V}.zip")
-set(GTEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/googletest-${GTEST_V}.zip)
-set(GTEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest-release-${GTEST_V})
+if (CMAKE_VERSION VERSION_LESS 3.2)
+    set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
+else ()
+    set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+endif ()
 
-if(NOT EXISTS "${GTEST_DIR}")
-    file(DOWNLOAD "${GTEST_URL}" "${GTEST_PATH}" SHOW_PROGRESS)
-    execute_process(COMMAND unzip ${GTEST_PATH} -d ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+download_project(
+        PROJ googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.10.0
+        GIT_PROGRESS 1
+        ${UPDATE_DISCONNECTED_IF_AVAILABLE}
+)
 
-add_subdirectory(${GTEST_DIR})
-
+add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+include_directories("${gtest_SOURCE_DIR}/include" "${gmock_SOURCE_DIR}/include")
 
 #++++++++++++++++++++++++++++++++++++#
 #     setup test in subdirectory     #
 #++++++++++++++++++++++++++++++++++++#
-
-include_directories(${GTEST_DIR}/googletest/include)
 
 add_subdirectory(base)
 add_subdirectory(tuple)
